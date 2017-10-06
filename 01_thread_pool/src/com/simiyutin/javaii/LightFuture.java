@@ -4,9 +4,9 @@ import java.util.function.Function;
 
 public class LightFuture <T> {
 
-    private final ThreadPoolImpl.LightFutureCore core;
+    private final ThreadPoolImpl.LightFutureCore<T> core;
 
-    LightFuture(ThreadPoolImpl.LightFutureCore core) {
+    LightFuture(ThreadPoolImpl.LightFutureCore<T> core) {
         this.core = core;
     }
 
@@ -15,7 +15,7 @@ public class LightFuture <T> {
     }
 
     T get() throws LightExecutionException {
-        return (T) core.get();
+        return core.get();
     }
 
     <R> LightFuture<R> thenApply(Function<T, R> func) {

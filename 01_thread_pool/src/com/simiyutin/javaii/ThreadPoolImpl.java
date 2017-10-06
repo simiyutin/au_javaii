@@ -22,9 +22,9 @@ public class ThreadPoolImpl implements ThreadPool {
     }
 
     @Override
-    public <T> LightFuture<T> feed(Supplier<? extends T> supplier) {
+    public <T> LightFuture<T> feed(Supplier<T> supplier) {
 
-        LightFutureCore core = new LightFutureCore(supplier);
+        LightFutureCore<T> core = new LightFutureCore<T>(supplier);
 
         synchronized (taskQueue) {
             taskQueue.add(core);
@@ -71,14 +71,14 @@ public class ThreadPoolImpl implements ThreadPool {
         }
     }
 
-    class LightFutureCore {
+    class LightFutureCore<T> {
 
-        final Supplier supplier;
+        final Supplier<T> supplier;
         volatile boolean ready;
-        Object result;
+        T result;
         Exception caughtException;
 
-        private LightFutureCore(Supplier supplier) {
+        private LightFutureCore(Supplier<T> supplier) {
             this.supplier = supplier;
             this.result = null;
             this.ready = false;
@@ -89,7 +89,7 @@ public class ThreadPoolImpl implements ThreadPool {
             return ready;
         }
 
-        synchronized Object get() throws LightExecutionException {
+        synchronized T get() throws LightExecutionException {
             while (!isReady()) {
                 try {
                     wait();
@@ -105,7 +105,7 @@ public class ThreadPoolImpl implements ThreadPool {
             return result;
         }
 
-        <T, R> LightFuture<R> thenApply(Function<T, R> func) {
+        <R> LightFuture<R> thenApply(Function<T, R> func) {
 
             Supplier<R> spl = () -> {
                 T result;
@@ -117,7 +117,7 @@ public class ThreadPoolImpl implements ThreadPool {
                             return null;
                         }
                     }
-                    result = (T) this.result;
+                    result = this.result;
                 }
 
                 return func.apply(result);
