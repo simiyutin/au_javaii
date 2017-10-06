@@ -18,7 +18,7 @@ public class LightFuture <T> {
         return core.get();
     }
 
-    <R> LightFuture<R> thenApply(Function<T, R> func) {
+    <R> LightFuture<R> thenApply(Function<? super T, ? extends R> func) {
         return core.thenApply(func);
     }
 }

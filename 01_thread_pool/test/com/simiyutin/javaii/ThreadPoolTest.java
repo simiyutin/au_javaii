@@ -10,9 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class ThreadPoolTest {
 
@@ -150,5 +148,19 @@ public class ThreadPoolTest {
         for (int i = 0; i < n; i++) {
             assertEquals(futs.get(i).get(), TWO);
         }
+    }
+
+    @Test
+    public void testGenerics() throws Exception {
+        ThreadPool tp = new ThreadPoolImpl(3);
+        Supplier<Integer> spl = () -> 30;
+        LightFuture<Integer> lf = tp.feed(spl);
+        Number result = lf.get();
+
+        Function<Number, Number> fun = (i) -> i.intValue() + 1;
+        LightFuture<Number> fut = tp.feed(waitAndReturnOne).thenApply(fun);
+
+        Function<Number, Integer> fun2 = (i) -> i.intValue() + 1;
+        LightFuture<Number> fut2 = tp.feed(waitAndReturnOne).thenApply(fun2);
     }
 }

@@ -23,7 +23,7 @@ public class ThreadPoolImpl implements ThreadPool {
 
     @Override
     public <T> LightFuture<T> feed(Supplier<T> supplier) {
-        LightFutureCore<T> core = new LightFutureCore<T>(supplier);
+        LightFutureCore<T> core = new LightFutureCore<>(supplier);
         submitCore(core);
         return new LightFuture<>(core);
     }
@@ -114,7 +114,7 @@ public class ThreadPoolImpl implements ThreadPool {
             return result;
         }
 
-        <R> LightFuture<R> thenApply(Function<T, R> func) {
+        <R> LightFuture<R> thenApply(Function<? super T, ? extends R> func) {
             LightFutureCore<R> core = new LightFutureCore<>(() -> func.apply(result));
             core.parent = this;
             submitCore(core);
