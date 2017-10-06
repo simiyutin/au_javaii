@@ -17,7 +17,7 @@ public class ThreadPoolImpl implements ThreadPool {
         this.threads = new ArrayList<>();
         for (int i = 0; i < nThreads; i++) {
             threads.add(new Thread(new WorkerRoutine()));
-            threads.get(threads.size() - 1).start();
+            threads.get(i).start();
         }
     }
 
@@ -47,7 +47,7 @@ public class ThreadPoolImpl implements ThreadPool {
             while (true) {
                 LightFutureCore core;
                 synchronized (taskQueue) {
-                    while (taskQueue.size() == 0) {
+                    while (taskQueue.isEmpty()) {
                         try {
                             taskQueue.wait();
                         } catch (InterruptedException e) {
@@ -61,7 +61,7 @@ public class ThreadPoolImpl implements ThreadPool {
                     try {
                         core.result = core.supplier.get();
                     } catch (Exception ex) {
-                        core.caughtException = true;
+                        core.caughtException = ex;
                     }
                     core.ready = true;
                     core.notifyAll();
@@ -75,14 +75,14 @@ public class ThreadPoolImpl implements ThreadPool {
 
         final Supplier supplier;
         volatile boolean ready;
-        boolean caughtException;
         Object result;
+        Exception caughtException;
 
         private LightFutureCore(Supplier supplier) {
             this.supplier = supplier;
             this.result = null;
             this.ready = false;
-            this.caughtException = false;
+            this.caughtException = null;
         }
 
         boolean isReady() {
@@ -97,8 +97,10 @@ public class ThreadPoolImpl implements ThreadPool {
                     throw new LightExecutionException();
                 }
             }
-            if (caughtException) {
-                throw new LightExecutionException();
+            if (caughtException != null) {
+                LightExecutionException ex = new LightExecutionException();
+                ex.addSuppressed(caughtException);
+                throw ex;
             }
             return result;
         }
@@ -122,6 +124,6 @@ public class ThreadPoolImpl implements ThreadPool {
             };
 
             return feed(spl);
-        };
+        }
     }
 }

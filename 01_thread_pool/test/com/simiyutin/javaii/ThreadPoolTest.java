@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 public class ThreadPoolTest {
 
@@ -72,14 +73,23 @@ public class ThreadPoolTest {
         //if finishes than OK
     }
 
-    @Test(expected = LightExecutionException.class)
+    @Test
     public void testExceptionInTask() throws Exception {
-        ThreadPool tp = new ThreadPoolImpl(3);
-        Supplier<Integer> spl = () -> {
-            throw new RuntimeException("hello");
-        };
-        LightFuture<Integer> lf = tp.feed(spl);
-        lf.get();
+        try {
+            ThreadPool tp = new ThreadPoolImpl(3);
+            Supplier<Integer> spl = () -> {
+                throw new RuntimeException("hello");
+            };
+            LightFuture<Integer> lf = tp.feed(spl);
+            lf.get();
+            fail("Exception must be thrown");
+        } catch (LightExecutionException ex) {
+            if(ex.getSuppressed().length == 0) {
+                fail("Exceptioon must contain suppressed one");
+            }
+            assertEquals(ex.getSuppressed()[0].getClass(), RuntimeException.class);
+        }
+
     }
 
     @Test

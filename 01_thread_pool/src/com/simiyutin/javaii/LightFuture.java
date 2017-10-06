@@ -12,13 +12,13 @@ public class LightFuture <T> {
 
     boolean isReady() {
         return core.isReady();
-    };
+    }
 
     T get() throws LightExecutionException {
         return (T) core.get();
-    };
+    }
 
     <R> LightFuture<R> thenApply(Function<T, R> func) {
         return core.thenApply(func);
-    };
+    }
 }
