@@ -23,14 +23,8 @@ public class ThreadPoolImpl implements ThreadPool {
 
     @Override
     public <T> LightFuture<T> feed(Supplier<T> supplier) {
-
         LightFutureCore<T> core = new LightFutureCore<T>(supplier);
-
-        synchronized (taskQueue) {
-            taskQueue.add(core);
-            taskQueue.notify();
-        }
-
+        submitCore(core);
         return new LightFuture<>(core);
     }
 
@@ -38,6 +32,13 @@ public class ThreadPoolImpl implements ThreadPool {
     public void shutdown() {
         for (Thread thread : threads) {
             thread.interrupt();
+        }
+    }
+
+    private <T> void submitCore(LightFutureCore<T> core) {
+        synchronized (taskQueue) {
+            taskQueue.add(core);
+            taskQueue.notify();
         }
     }
 
@@ -58,6 +59,12 @@ public class ThreadPoolImpl implements ThreadPool {
                 }
 
                 synchronized (core) {
+                    if (core.parent != null && !core.parent.isReady()) {
+                        synchronized (taskQueue) {
+                            taskQueue.add(core);
+                        }
+                        continue;
+                    }
                     try {
                         core.result = core.supplier.get();
                     } catch (Exception ex) {
@@ -73,6 +80,7 @@ public class ThreadPoolImpl implements ThreadPool {
 
     class LightFutureCore<T> {
 
+        LightFutureCore parent;
         final Supplier<T> supplier;
         volatile boolean ready;
         T result;
@@ -83,6 +91,7 @@ public class ThreadPoolImpl implements ThreadPool {
             this.result = null;
             this.ready = false;
             this.caughtException = null;
+            this.parent = null;
         }
 
         boolean isReady() {
@@ -106,24 +115,10 @@ public class ThreadPoolImpl implements ThreadPool {
         }
 
         <R> LightFuture<R> thenApply(Function<T, R> func) {
-
-            Supplier<R> spl = () -> {
-                T result;
-                synchronized (this) {
-                    while (!isReady()) {
-                        try {
-                            wait();
-                        } catch (InterruptedException e) {
-                            return null;
-                        }
-                    }
-                    result = this.result;
-                }
-
-                return func.apply(result);
-            };
-
-            return feed(spl);
+            LightFutureCore<R> core = new LightFutureCore<>(() -> func.apply(result));
+            core.parent = this;
+            submitCore(core);
+            return new LightFuture<>(core);
         }
     }
 }
