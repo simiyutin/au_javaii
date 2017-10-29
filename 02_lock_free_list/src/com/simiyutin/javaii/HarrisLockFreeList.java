@@ -14,7 +14,7 @@ public class HarrisLockFreeList<T> implements LockFreeList<T>{
 
     @Override
     public boolean isEmpty() {
-        return head.nextRef.getReference() == tail;
+        return next(head) == tail;
     }
 
     // node is marked <==> its .next field is marked
@@ -62,6 +62,19 @@ public class HarrisLockFreeList<T> implements LockFreeList<T>{
     public boolean contains(T value) {
         Pair<T> neighbors = search(value);
         return neighbors.rightNode != tail && neighbors.rightNode.key.equals(value);
+    }
+
+    private Node<T> next(Node<T> node) {
+        boolean[] holder = {false};
+        Node<T> next = node.nextRef.getReference();
+        while (next != tail) {
+            Node<T> nextOfNext = next.nextRef.get(holder);
+            if (!holder[0]) {
+                break;
+            }
+            next = nextOfNext;
+        }
+        return next;
     }
 
     private Pair<T> search(T key) {
