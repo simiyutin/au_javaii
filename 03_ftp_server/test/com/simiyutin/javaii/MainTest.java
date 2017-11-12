@@ -22,9 +22,9 @@ public class MainTest {
 
         Client client = new Client();
         client.connect("localhost", 11111);
-        List<Pair<String, Boolean>> list = client.executeList("ignored");
+        List<Pair<String, Boolean>> list = client.executeList("resources");
         System.out.println(list);
-        byte [] file = client.executeGet("ignored");
+        byte [] file = client.executeGet("resources/" + list.get(0).fst); //todo return error messages
         System.out.println(new String(file));
     }
 }

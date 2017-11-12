@@ -2,8 +2,7 @@ package com.simiyutin.javaii;
 
 import com.sun.tools.javac.util.Pair;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,22 +40,38 @@ public class ServerWorker implements Runnable {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
     }
 
     private List<Pair<String, Boolean>> getListOfDir(String path) {
         List<Pair<String, Boolean>> result = new ArrayList<>();
-        result.add(new Pair<>("dir1", true));
-        result.add(new Pair<>("dir2", true));
-        result.add(new Pair<>("dir3", true));
-        result.add(new Pair<>("file1", false));
-        result.add(new Pair<>("file2", false));
+        File dir = new File(path);
+        File [] files = dir.listFiles();
+        if (files == null) {
+            return result;
+        }
+        for (File f : files) {
+            if (f.isDirectory()) {
+                result.add(new Pair<>(f.getName(), true));
+            } else {
+                result.add(new Pair<>(f.getName(), false));
+            }
+        }
         return result;
     }
 
-    //byte array instead of stream assumning file size will be less than 2gb
-    private byte [] getFileBytes(String file) {
-        return "test file content".getBytes();
+    //byte array instead of stream assuming file size will be less than 2gb
+    private byte [] getFileBytes(String fileName) throws IOException {
+        File file = new File(fileName);
+        FileInputStream fis = new FileInputStream(file);
+        BufferedInputStream bis = new BufferedInputStream(fis);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final int bufferSize = 1024;
+        byte [] buffer = new byte[bufferSize];
+        int readSize;
+        while ((readSize = bis.read(buffer, 0, bufferSize)) > 0) {
+            baos.write(buffer, 0, readSize);
+        }
+        return baos.toByteArray();
     }
 }
