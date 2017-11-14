@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +44,12 @@ public class ServerWorker implements Runnable {
             } catch (EOFException e) {
                 // connection is closed by client
                 return;
+            } catch (SocketException e) {
+                // connection is closed by server
+                if (socket.isClosed()) {
+                    return;
+                }
+                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
