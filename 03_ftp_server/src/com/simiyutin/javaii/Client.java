@@ -2,6 +2,7 @@ package com.simiyutin.javaii;
 
 import com.sun.tools.javac.util.Pair;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +11,7 @@ import java.util.List;
 
 public class Client {
 
+    @Nullable
     private Socket socket = null;
 
     public void connect(@NotNull String host, int port) throws IOException {
@@ -21,6 +23,11 @@ public class Client {
             throw new RuntimeException("Client is not connected to server");
         }
         socket.close();
+        socket = null;
+    }
+
+    public boolean isConnected() {
+        return socket != null && socket.isConnected() && !socket.isClosed();
     }
 
     @NotNull

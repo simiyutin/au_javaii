@@ -4,8 +4,12 @@ import com.sun.tools.javac.util.Pair;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class MainTest {
@@ -23,8 +27,9 @@ public class MainTest {
         Client client = new Client();
         client.connect("localhost", 11111);
         List<Pair<String, Boolean>> list = client.executeList("resources");
-        System.out.println(list);
+        assertEquals(list, Collections.singletonList(new Pair<>("test_file.txt", false)));
         byte [] file = client.executeGet("resources/" + list.get(0).fst); //todo return error messages
-        System.out.println(new String(file));
+        assertEquals("test file text!", new String(file));
+        client.disconnect();
     }
 }

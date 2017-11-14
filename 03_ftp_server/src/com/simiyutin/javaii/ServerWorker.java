@@ -19,7 +19,6 @@ public class ServerWorker implements Runnable {
     public void run() {
         while (true) {
             if (socket.isClosed()) {
-                System.out.println("server: socket is closed");
                 return;
             }
             try {
@@ -41,6 +40,9 @@ public class ServerWorker implements Runnable {
                         break;
                 }
 
+            } catch (EOFException e) {
+                // connection is closed by client
+                return;
             } catch (IOException e) {
                 e.printStackTrace();
             }
