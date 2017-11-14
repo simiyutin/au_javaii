@@ -1,6 +1,7 @@
 package com.simiyutin.javaii;
 
 import com.sun.tools.javac.util.Pair;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.net.Socket;
@@ -17,9 +18,12 @@ public class ServerWorker implements Runnable {
     @Override
     public void run() {
         while (true) {
-            try { //todo try with resources
-                InputStream is = socket.getInputStream();
-                Pair<RequestType, String> request = RequestFactory.parseRequest(is);
+            if (socket.isClosed()) {
+                System.out.println("server: socket is closed");
+                return;
+            }
+            try {
+                Pair<RequestType, String> request = RequestFactory.parseRequest(socket.getInputStream());
                 switch (request.fst) {
                     case LIST: {
                         List<Pair<String, Boolean>> result = getListOfDir(request.snd);
@@ -43,7 +47,8 @@ public class ServerWorker implements Runnable {
         }
     }
 
-    private List<Pair<String, Boolean>> getListOfDir(String path) {
+    @NotNull
+    private List<Pair<String, Boolean>> getListOfDir(@NotNull String path) {
         List<Pair<String, Boolean>> result = new ArrayList<>();
         File dir = new File(path);
         File [] files = dir.listFiles();
@@ -60,8 +65,9 @@ public class ServerWorker implements Runnable {
         return result;
     }
 
+    @NotNull
     //byte array instead of stream assuming file size will be less than 2gb
-    private byte [] getFileBytes(String fileName) throws IOException {
+    private byte [] getFileBytes(@NotNull String fileName) throws IOException {
         File file = new File(fileName);
         FileInputStream fis = new FileInputStream(file);
         BufferedInputStream bis = new BufferedInputStream(fis);

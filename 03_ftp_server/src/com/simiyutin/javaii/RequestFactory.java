@@ -22,7 +22,8 @@ public class RequestFactory {
         return createRequest(GET, path);
     }
 
-    private static byte [] createRequest(RequestType type, String path) {
+    @NotNull
+    private static byte [] createRequest(@NotNull RequestType type, @NotNull String path) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
         try {
@@ -42,6 +43,7 @@ public class RequestFactory {
         return new Pair<>(RequestType.valueOf(request), path);
     }
 
+    @NotNull
     public static List<Pair<String, Boolean>> parseListResponse(InputStream is) throws IOException {
         DataInputStream dis = new DataInputStream(is);
         int size = dis.readInt();
@@ -54,7 +56,8 @@ public class RequestFactory {
         return result;
     }
 
-    public static byte [] parseGetResponse(InputStream is) throws IOException {
+    @NotNull
+    public static byte [] parseGetResponse(@NotNull InputStream is) throws IOException {
         DataInputStream dis = new DataInputStream(is);
         //int instead of long assuming file size will be less than 2 gb
         int size = dis.readInt();
@@ -63,7 +66,8 @@ public class RequestFactory {
         return result;
     }
 
-    public static byte [] createListResponse(List<Pair<String, Boolean>> dirs) {
+    @NotNull
+    public static byte [] createListResponse(@NotNull List<Pair<String, Boolean>> dirs) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
         try {
@@ -80,7 +84,8 @@ public class RequestFactory {
         return baos.toByteArray();
     }
 
-    public static byte [] createGetResponse(byte[] fileContent) {
+    @NotNull
+    public static byte [] createGetResponse(@NotNull byte[] fileContent) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
         try {

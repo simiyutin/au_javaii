@@ -1,6 +1,7 @@
 package com.simiyutin.javaii;
 
 import com.sun.tools.javac.util.Pair;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,22 +12,19 @@ public class Client {
 
     private Socket socket = null;
 
-    public void connect(String host, int port) throws IOException {
+    public void connect(@NotNull String host, int port) throws IOException {
         socket = new Socket(host, port);
     }
 
-    public void disconnect() {
+    public void disconnect() throws IOException {
         if (socket == null) {
             throw new RuntimeException("Client is not connected to server");
         }
-        try {
-            socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        socket.close();
     }
 
-    List<Pair<String, Boolean>> executeList(String dir) throws IOException {
+    @NotNull
+    public List<Pair<String, Boolean>> executeList(@NotNull String dir) throws IOException {
         if (socket == null) {
             throw new RuntimeException("Client is not connected to server");
         }
@@ -36,7 +34,8 @@ public class Client {
         return RequestFactory.parseListResponse(is);
     }
 
-    byte [] executeGet(String file) throws IOException {
+    @NotNull
+    public byte [] executeGet(@NotNull String file) throws IOException {
         if (socket == null) {
             throw new RuntimeException("Client is not connected to server");
         }

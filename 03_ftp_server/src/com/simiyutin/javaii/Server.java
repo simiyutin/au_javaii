@@ -15,7 +15,7 @@ public class Server {
         while (true) {
             Socket socket = ss.accept();
             sockets.add(socket);
-            new Thread(new ServerWorker(socket)).start(); //todo do i need to keep reference to thread to save it from gc?
+            new Thread(new ServerWorker(socket)).start();
         }
     }
 
