@@ -1,10 +1,9 @@
 package tracker;
 
-import requests.TrackerRequest;
+import requests.RequestCallback;
 import requests.TrackerRequestFactory;
 
 import java.io.IOException;
-import java.util.*;
 
 public class TrackerWorker implements Runnable {
     private final Peer peer;
@@ -19,11 +18,11 @@ public class TrackerWorker implements Runnable {
     public void run() {
         while (true) {
             if (peer.getSocket().isClosed()) {
-                return;
+                break;
             }
             try {
-                TrackerRequest request = TrackerRequestFactory.parseRequest(peer.getSocket().getInputStream());
-                request.execute(peer.getSocket().getOutputStream(), environment);
+                RequestCallback callback = TrackerRequestFactory.parseRequest(peer.getSocket().getInputStream());
+                callback.execute(peer, environment);
             } catch (IOException e) {
                 e.printStackTrace();
             }

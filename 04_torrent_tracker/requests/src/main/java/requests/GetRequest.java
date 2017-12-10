@@ -1,5 +1,7 @@
 package requests;
 
+import java.io.*;
+
 import static requests.RequestType.GET;
 
 public class GetRequest {
@@ -23,4 +25,19 @@ public class GetRequest {
     public int getPart() {
         return part;
     }
+
+    public static GetRequest parse(InputStream is) throws IOException {
+        DataInputStream dis = new DataInputStream(is);
+        int id = dis.readInt();
+        int part = dis.readInt();
+        return new GetRequest(id, part);
+    }
+
+    public void dump(OutputStream os) throws IOException {
+        DataOutputStream dos = new DataOutputStream(os);
+        dos.writeInt(getType().getValue());
+        dos.writeInt(getId());
+        dos.writeInt(getPart());
+    }
+
 }

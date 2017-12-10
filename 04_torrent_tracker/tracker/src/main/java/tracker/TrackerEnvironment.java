@@ -1,5 +1,7 @@
 package tracker;
 
+import requests.FileInfo;
+
 import java.util.*;
 
 public class TrackerEnvironment {
@@ -10,31 +12,22 @@ public class TrackerEnvironment {
         return peers;
     }
 
+    public Set<Peer> getPeers(int fileId) {
+        FileInfo info = new FileInfo(fileId);
+        return index.get(info);
+    }
+
     public Map<FileInfo, Set<Peer>> getIndex() {
         return index;
     }
 
-    public static class FileInfo {
-        private final int id;
-        private final String name;
-        private final long size;
-
-        public FileInfo(int id, String name, long size) {
-            this.id = id;
-            this.name = name;
-            this.size = size;
-        }
-
-        public int getId() {
-            return id;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public long getSize() {
-            return size;
-        }
+    public int addFile(Peer peer, String name, long size) {
+        int id = index.keySet().size();
+        FileInfo info = new FileInfo(id, name, size);
+        Set<Peer> peers = new HashSet<>();
+        peers.add(peer);
+        index.put(info, peers);
+        return id;
     }
+
 }

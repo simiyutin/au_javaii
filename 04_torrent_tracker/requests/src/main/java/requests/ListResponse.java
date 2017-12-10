@@ -1,5 +1,7 @@
 package requests;
 
+import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ListResponse {
@@ -17,27 +19,27 @@ public class ListResponse {
         return files;
     }
 
-    public static class FileInfo {
-        private int id;
-        private String name;
-        private int size;
-
-        public FileInfo(int id, String name, int size) {
-            this.id = id;
-            this.name = name;
-            this.size = size;
+    public static ListResponse parse(InputStream is) throws IOException {
+        DataInputStream dis = new DataInputStream(is);
+        int count = dis.readInt();
+        List<FileInfo> files = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            int id = dis.readInt();
+            String name = dis.readUTF();
+            long size = dis.readLong();
+            FileInfo info = new FileInfo(id, name, size);
+            files.add(info);
         }
+        return new ListResponse(files);
+    }
 
-        public int getId() {
-            return id;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public int getSize() {
-            return size;
+    public void dump(OutputStream os) throws IOException {
+        DataOutputStream dos = new DataOutputStream(os);
+        dos.writeInt(getFiles().size());
+        for (FileInfo info : getFiles()) {
+            dos.writeInt(info.getId());
+            dos.writeUTF(info.getName());
+            dos.writeLong(info.getSize());
         }
     }
 }
