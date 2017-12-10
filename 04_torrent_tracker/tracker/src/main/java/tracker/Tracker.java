@@ -3,12 +3,10 @@ package tracker;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.*;
 
 public class Tracker {
     private ServerSocket serverSocket = null;
-    private final List<Peer> peers = new ArrayList<>();
-    private final Map<Integer, Set<Peer>> index = new HashMap<>();
+    private final TrackerEnvironment environment = new TrackerEnvironment();
     private final int PORT = 8081;
 
     public void start() throws IOException {
@@ -22,10 +20,10 @@ public class Tracker {
                 while (true) {
                     Socket socket = serverSocket.accept();
                     Peer peer = new Peer(socket);
-                    synchronized (peers) {
-                        peers.add(peer);
+                    synchronized (environment.getPeers()) {
+                        environment.getPeers().add(peer);
                     }
-                    new Thread(new TrackerWorker(peer, index)).start();
+                    new Thread(new TrackerWorker(peer, environment)).start();
                 }
             } catch (IOException e) {
                 e.printStackTrace();

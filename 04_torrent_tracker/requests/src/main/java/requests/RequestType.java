@@ -1,5 +1,7 @@
 package requests;
 
+import java.security.InvalidParameterException;
+
 public enum RequestType {
     LIST(1),
     UPLOAD(2),
@@ -29,7 +31,7 @@ public enum RequestType {
             case 6:
                 return GET;
             default:
-                return null;
+                throw new InvalidParameterException();
         }
     }
 

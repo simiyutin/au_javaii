@@ -8,11 +8,11 @@ import java.util.*;
 
 public class TrackerWorker implements Runnable {
     private final Peer peer;
-    private final Map<Integer, Set<Peer>> index;
+    private final TrackerEnvironment environment;
 
-    public TrackerWorker(Peer peer, Map<Integer, Set<Peer>> index) {
+    public TrackerWorker(Peer peer, TrackerEnvironment environment) {
         this.peer = peer;
-        this.index = index;
+        this.environment = environment;
     }
 
     @Override
@@ -23,7 +23,7 @@ public class TrackerWorker implements Runnable {
             }
             try {
                 TrackerRequest request = TrackerRequestFactory.parseRequest(peer.getSocket().getInputStream());
-                request.execute(peer.getSocket().getOutputStream());
+                request.execute(peer.getSocket().getOutputStream(), environment);
             } catch (IOException e) {
                 e.printStackTrace();
             }
