@@ -25,12 +25,4 @@ public class ClientEnvironment {
     public List<Leech> getLeeches() {
         return leeches;
     }
-
-    public List<Integer> getAvailableFileParts(int fileId) {
-        throw new UnsupportedOperationException();
-    }
-
-    public FilePart getPart(int fileId, int partId) {
-        throw new UnsupportedOperationException();
-    }
 }

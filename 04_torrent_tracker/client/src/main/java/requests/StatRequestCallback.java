@@ -1,6 +1,7 @@
 package requests;
 
 import client.ClientEnvironment;
+import client.IOService;
 import client.Leech;
 
 import java.io.IOException;
@@ -16,7 +17,7 @@ public class StatRequestCallback implements ClientRequestCallback {
     @Override
     public void execute(Leech leech, ClientEnvironment environment) throws IOException {
         int fileId = request.getFileId();
-        List<Integer> fileParts = environment.getAvailableFileParts(fileId);
+        List<Integer> fileParts = IOService.getAvailableFileParts(fileId);
         StatResponse response = new StatResponse(fileParts);
         response.dump(leech.getSocket().getOutputStream());
     }

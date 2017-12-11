@@ -1,8 +1,6 @@
 package client;
 
-import requests.ListResponse;
-import requests.SourcesResponse;
-import requests.UpdateRequest;
+import requests.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +18,7 @@ public class Client {
     private final int UPDATE_INTERVAL = 4;
     private Socket trackerSocket = null;
     private final ClientEnvironment environment = new ClientEnvironment();
+
 
     public void start(int clientPort, String trackerHost) throws IOException {
         serverSocket = new ServerSocket(clientPort);
@@ -69,24 +68,18 @@ public class Client {
 
     }
 
-    public void executeUpload(File file) {
-
+    public void uploadFile(String path) throws IOException {
+        File file = new File(path);
+        UploadRequest request = new UploadRequest(file.getName(), file.length());
+        request.dump(trackerSocket.getOutputStream());
+        UploadResponse response = UploadResponse.parse(trackerSocket.getInputStream());
+        IOService.split(file, response.getId());
+        FileInfo info = new FileInfo(response.getId(), file.getName(), file.length());
+        environment.getSeedingFiles().add(info);
     }
 
-    public ListResponse executeList() {
-        return null;
-    }
-
-    private SourcesResponse executeSources(int id) {
-        return null;
-    }
-
-    // update: service
-
-    // stat: service
-
-    public void downloadFile() {
-
+    public void downloadFile(String fileName) {
+        new Thread(new DownloadTask(fileName)).start();
     }
 
 }
