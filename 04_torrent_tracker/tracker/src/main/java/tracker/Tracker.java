@@ -24,7 +24,7 @@ public class Tracker {
 
     private void startListenerThread() {
         new Thread(() -> {
-            try {
+            try { //todo если вылетит любое исключение, то есь трекер сдохнет
                 while (true) {
                     System.out.println("tracker: waiting for client");
                     Socket socket = serverSocket.accept();
@@ -73,6 +73,6 @@ public class Tracker {
     }
 
     public void stop() {
-
+        throw new UnsupportedOperationException();
     }
 }

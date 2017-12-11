@@ -3,18 +3,14 @@ package requests;
 import java.io.*;
 
 public class GetResponse {
-    private final byte[] bytes;
+    private final FilePart filePart;
 
-    public GetResponse(byte[] bytes) {
-        this.bytes = bytes;
+    public GetResponse(FilePart filePart) {
+        this.filePart = filePart;
     }
 
-    public int getSize() {
-        return bytes.length;
-    }
-
-    public byte[] getBytes() {
-        return bytes;
+    public FilePart getFilePart() {
+        return filePart;
     }
 
     public static GetResponse parse(InputStream is) throws IOException {
@@ -22,12 +18,17 @@ public class GetResponse {
         int size = dis.readInt();
         byte bytes[] = new byte[size];
         dis.read(bytes, 0, size);
-        return new GetResponse(bytes);
+        FilePart filePart = new FilePart(bytes);
+        return new GetResponse(filePart);
     }
 
     public void dump(OutputStream os) throws IOException {
         DataOutputStream dos = new DataOutputStream(os);
-        dos.writeInt(getSize());
-        dos.write(getBytes(), 0, getSize());
+        dos.writeInt(getFilePart().getSize());
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        while((bytesRead = getFilePart().getPartStream().read(buffer)) != -1) {
+            os.write(buffer,0, bytesRead);
+        }
     }
 }

@@ -21,6 +21,11 @@
             <artifactId>junit</artifactId>
             <version>RELEASE</version>
         </dependency>
+        <dependency>
+            <groupId>tracker</groupId>
+            <artifactId>requests</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <groupId>torrent</groupId>

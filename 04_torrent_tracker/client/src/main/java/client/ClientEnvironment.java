@@ -1,0 +1,36 @@
+package client;
+
+import requests.FileInfo;
+import requests.FilePart;
+
+import javax.naming.ldap.UnsolicitedNotification;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+public class ClientEnvironment {
+    private final Set<FileInfo> seedingFiles = new HashSet<>();
+    private final List<Leech> leeches = new ArrayList<>();
+
+    public Set<FileInfo> getSeedingFiles() {
+        return seedingFiles;
+    }
+
+    public List<Integer> getSeedingFileIds() {
+        return seedingFiles.stream().map(FileInfo::getId).collect(Collectors.toList());
+    }
+
+    public List<Leech> getLeeches() {
+        return leeches;
+    }
+
+    public List<Integer> getAvailableFileParts(int fileId) {
+        throw new UnsupportedOperationException();
+    }
+
+    public FilePart getPart(int fileId, int partId) {
+        throw new UnsupportedOperationException();
+    }
+}
