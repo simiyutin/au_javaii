@@ -1,5 +1,8 @@
 package tracker;
 
+import requests.SourcesResponse;
+import requests.SourcesResponse.HostPort;
+
 import java.net.Socket;
 
 public class Peer {
@@ -32,6 +35,10 @@ public class Peer {
 
     public byte[] getIp() {
         return socket.getInetAddress().getAddress();
+    }
+
+    public HostPort getHostPort() {
+        return new HostPort(getIp(), getPort());
     }
 
     public void update() {

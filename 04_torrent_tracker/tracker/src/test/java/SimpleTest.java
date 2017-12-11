@@ -9,6 +9,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
+import static junit.framework.TestCase.assertTrue;
+
 public class SimpleTest {
     @Test
     public void testSimple() throws IOException {
@@ -20,6 +22,12 @@ public class SimpleTest {
         UploadRequest uploadRequest = new UploadRequest("abc.txt", 100);
         uploadRequest.dump(socket.getOutputStream());
         UploadResponse uploadResponse = UploadResponse.parse(socket.getInputStream());
+        assertTrue(uploadResponse.getId() == 0);
+
+        UploadRequest uploadRequest2 = new UploadRequest("abc.txt", 100);
+        uploadRequest.dump(socket.getOutputStream());
+        UploadResponse uploadResponse2 = UploadResponse.parse(socket.getInputStream());
+        assertTrue(uploadResponse2.getId() == 1);
 
         dos.writeInt(RequestType.LIST.getValue());
         ListResponse response = ListResponse.parse(socket.getInputStream());

@@ -55,6 +55,11 @@ public class Tracker {
                     while (it.hasNext()) {
                         Peer peer = it.next();
                         if (peer.outdated()) {
+                            try {
+                                peer.getSocket().close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                             it.remove();
                             outdated.add(peer);
                         }

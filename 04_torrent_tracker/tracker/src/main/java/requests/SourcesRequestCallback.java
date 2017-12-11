@@ -1,13 +1,17 @@
 package requests;
 
+import requests.SourcesResponse.HostPort;
 import tracker.Peer;
 import tracker.TrackerEnvironment;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-public class SourcesRequestCallback implements RequestCallback {
+public class SourcesRequestCallback implements TrackerRequestCallback {
     private final SourcesRequest request;
 
     public SourcesRequestCallback(SourcesRequest request) {
@@ -18,15 +22,9 @@ public class SourcesRequestCallback implements RequestCallback {
     public void execute(Peer peer, TrackerEnvironment environment) throws IOException {
         synchronized (environment) {
             Set<Peer> peers = environment.getPeers(request.getFileId());
-            DataOutputStream dos = new DataOutputStream(peer.getSocket().getOutputStream());
-            dos.writeInt(peers.size());
-            for (Peer filePeer : peers) {
-                dos.write(filePeer.getIp());
-                if (filePeer.getIp().length != 4) {
-                    throw new RuntimeException("lol");
-                }
-                dos.writeInt(filePeer.getPort());
-            }
+            List<HostPort> sources = peers.stream().map(Peer::getHostPort).collect(Collectors.toList());
+            SourcesResponse response = new SourcesResponse(sources);
+            response.dump(peer.getSocket().getOutputStream());
         }
     }
 }

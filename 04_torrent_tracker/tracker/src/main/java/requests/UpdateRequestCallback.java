@@ -3,11 +3,10 @@ package requests;
 import tracker.Peer;
 import tracker.TrackerEnvironment;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class UpdateRequestCallback implements RequestCallback {
+public class UpdateRequestCallback implements TrackerRequestCallback {
     private final UpdateRequest request;
 
     public UpdateRequestCallback(UpdateRequest request) {
@@ -17,7 +16,8 @@ public class UpdateRequestCallback implements RequestCallback {
     @Override
     public void execute(Peer peer, TrackerEnvironment environment) throws IOException {
         peer.update();
-        DataOutputStream dis = new DataOutputStream(peer.getSocket().getOutputStream());
-        dis.writeBoolean(true);
+        // todo
+        UpdateResponse response = new UpdateResponse(true);
+        response.dump(peer.getSocket().getOutputStream());
     }
 }

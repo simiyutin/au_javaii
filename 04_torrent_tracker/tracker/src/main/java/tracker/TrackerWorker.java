@@ -1,7 +1,7 @@
 package tracker;
 
-import requests.RequestCallback;
-import requests.TrackerRequestFactory;
+import requests.TrackerRequestCallback;
+import requests.TrackerRequestCallbackFactory;
 
 import java.io.IOException;
 
@@ -21,7 +21,7 @@ public class TrackerWorker implements Runnable {
                 break;
             }
             try {
-                RequestCallback callback = TrackerRequestFactory.parseRequest(peer.getSocket().getInputStream());
+                TrackerRequestCallback callback = TrackerRequestCallbackFactory.parseRequest(peer.getSocket().getInputStream());
                 callback.execute(peer, environment);
             } catch (IOException e) {
                 e.printStackTrace();

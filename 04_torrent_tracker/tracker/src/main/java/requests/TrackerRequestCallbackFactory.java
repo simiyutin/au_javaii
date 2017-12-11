@@ -4,8 +4,8 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class TrackerRequestFactory {
-    public static RequestCallback parseRequest(InputStream is) throws IOException {
+public class TrackerRequestCallbackFactory {
+    public static TrackerRequestCallback parseRequest(InputStream is) throws IOException {
         DataInputStream dis = new DataInputStream(is);
         RequestType type = RequestType.valueOf(dis.readInt());
         switch (type) {
@@ -25,7 +25,7 @@ public class TrackerRequestFactory {
             }
 
             default:
-                return null;
+                throw new IOException("Unknown request type");
         }
     };
 }
