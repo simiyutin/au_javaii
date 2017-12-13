@@ -18,6 +18,7 @@ public class Client {
     private final int UPDATE_INTERVAL = 4;
     private Socket trackerSocket = null;
     private final ClientEnvironment environment = new ClientEnvironment();
+    private final int FILE_SIZE = 5 * 1000_000;
 
 
     public void start(int clientPort, String trackerHost) throws IOException {
@@ -73,7 +74,7 @@ public class Client {
         UploadRequest request = new UploadRequest(file.getName(), file.length());
         request.dump(trackerSocket.getOutputStream());
         UploadResponse response = UploadResponse.parse(trackerSocket.getInputStream());
-        IOService.split(file, response.getId());
+        environment.getIoService().scatter(file, FILE_SIZE, response.getId());
         FileInfo info = new FileInfo(response.getId(), file.getName(), file.length());
         environment.getSeedingFiles().add(info);
     }

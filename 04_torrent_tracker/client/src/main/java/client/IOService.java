@@ -3,46 +3,82 @@ package client;
 import requests.FilePart;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class IOService {
-    private static final String basePath = "resources/index/";
-    public static final int PART_SIZE = 5 * 1000_000;
+    private final String basePath;
+    public IOService(String basePath) {
+        this.basePath = basePath;
+    }
 
-    // returns number of parts
-    public static int split(File file, int id) throws IOException {
-        long fileSize = file.length();
-        int partSize = (int) (fileSize - 1) / PART_SIZE + 1;
-        byte[] buffer = new byte[PART_SIZE];
+    public int scatter(File file, int partSize, int fileId) throws IOException {
+        byte[] buffer = new byte[partSize];
         int bytesRead;
-        FileInputStream fis = new FileInputStream(file);
-        int currentPart = 0;
-        while ((bytesRead = fis.read(buffer)) != -1) {
-            File partFile = new File(String.format("%s/%d/%d", basePath, id, currentPart++));
-            FileOutputStream fos = new FileOutputStream(partFile);
-            fos.write(buffer, 0, bytesRead);
-            fos.close();
+        int numberOfParts = 0;
+        File dir = new File(String.format("%s/index/%d", basePath, fileId));
+        dir.mkdirs();
+        try (FileInputStream fis = new FileInputStream(file)) {
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                File partFile = new File(dir, String.valueOf(numberOfParts++));
+                try(FileOutputStream fos = new FileOutputStream(partFile)) {
+                    fos.write(buffer, 0, bytesRead);
+                    fos.close();
+                }
+            }
+        }
+        return numberOfParts;
+    }
+
+    public void gather(int fileId, String name) throws IOException {
+        File targetFile = new File(String.format("%s/downloads/%s", basePath, name));
+        targetFile.getParentFile().mkdirs();
+        targetFile.createNewFile();
+
+        String dirPath = String.format("%s/index/%d", basePath, fileId);
+        File dir = new File(dirPath);
+        if (!dir.exists()) {
+            throw new FileNotFoundException(dirPath);
+        }
+        File[] parts = dir.listFiles();
+        if (parts == null) {
+            throw new IOException("error while reading " + dirPath);
+        }
+        Arrays.sort(parts, Comparator.comparing(f -> Integer.valueOf(f.getName())));
+        try(FileOutputStream targetStream = new FileOutputStream(targetFile)) {
+            for (File part : parts) {
+                try(FileInputStream partStream = new FileInputStream(part)) {
+                    move(partStream, targetStream);
+                }
+            }
+        }
+    }
+
+    public List<Integer> getAvailableFileParts(int fileId) {
+        File dir = new File(String.format("%s/index/%d", basePath, fileId));
+        File[] files = dir.listFiles();
+        if (files == null) {
+            return new ArrayList<>();
         }
 
-        return partSize;
+        return Arrays.stream(files)
+                .map(f -> Integer.valueOf(f.getName()))
+                .collect(Collectors.toList());
     }
 
-    public static List<Integer> getAvailableFileParts(int fileId) {
-        File dir = new File(String.format("%s/%d", basePath, fileId));
-        File[] files = dir.listFiles();
-        List<Integer> result =
-                Arrays.stream(files)
-                        .map(f -> Integer.valueOf(f.getName()))
-                        .collect(Collectors.toList());
-
-        return result;
+    public FilePart getPart(int fileId, int partId) throws FileNotFoundException {
+        File partFile = new File(String.format("%s/index/%d/%d", basePath, fileId, partId));
+        return new FilePart(Math.toIntExact(partFile.length()), new FileInputStream(partFile));
     }
 
-    public static FilePart getPart(int fileId, int partId) throws FileNotFoundException {
-        File partFile = new File(String.format("%s/%d/%d", basePath, fileId, partId));
-        FilePart part = new FilePart(Math.toIntExact(partFile.length()), new FileInputStream(partFile));
-        return part;
+    public static void move(InputStream is, OutputStream os) throws IOException {
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        while((bytesRead = is.read(buffer)) != -1) {
+            os.write(buffer, 0, bytesRead);
+        }
     }
 }

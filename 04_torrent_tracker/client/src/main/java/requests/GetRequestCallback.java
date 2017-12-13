@@ -18,8 +18,9 @@ public class GetRequestCallback implements ClientRequestCallback {
     public void execute(Leech leech, ClientEnvironment environment) throws IOException {
         int id = request.getId();
         int part = request.getPart();
-        FilePart filePart = IOService.getPart(id, part);
+        FilePart filePart = environment.getIoService().getPart(id, part);
         GetResponse response = new GetResponse(filePart);
         response.dump(leech.getSocket().getOutputStream());
+        filePart.getPartStream().close();
     }
 }
