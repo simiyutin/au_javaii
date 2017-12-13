@@ -1,9 +1,7 @@
 package client;
 
 import requests.FileInfo;
-import requests.FilePart;
 
-import javax.naming.ldap.UnsolicitedNotification;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

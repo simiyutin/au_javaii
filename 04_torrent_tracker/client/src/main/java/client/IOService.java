@@ -1,12 +1,7 @@
 package client;
 
-import requests.FilePart;
-
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class IOService {
@@ -69,9 +64,21 @@ public class IOService {
                 .collect(Collectors.toList());
     }
 
-    public FilePart getPart(int fileId, int partId) throws FileNotFoundException {
+//    public FilePart getPart(int fileId, int partId) throws FileNotFoundException {
+//        File partFile = new File(String.format("%s/index/%d/%d", basePath, fileId, partId));
+//        return new FilePart(Math.toIntExact(partFile.length()), new FileInputStream(partFile));
+//    }
+
+    public void dumpFilePart(int fileId, int partId, OutputStream os) throws IOException {
         File partFile = new File(String.format("%s/index/%d/%d", basePath, fileId, partId));
-        return new FilePart(Math.toIntExact(partFile.length()), new FileInputStream(partFile));
+        int size = Math.toIntExact(partFile.length());
+        try (
+                FileInputStream fis = new FileInputStream(partFile);
+                DataOutputStream dos = new DataOutputStream(os)
+        ) {
+            dos.writeInt(size);
+            move(fis, os);
+        }
     }
 
     public static void move(InputStream is, OutputStream os) throws IOException {
