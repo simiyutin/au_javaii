@@ -1,7 +1,6 @@
 package requests;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,7 +37,7 @@ public class ListResponse {
         DataOutputStream dos = new DataOutputStream(os);
         dos.writeInt(getCount());
         for (FileInfo info : getFiles()) {
-            dos.writeInt(info.getId());
+            dos.writeInt(info.getFileId());
             dos.writeUTF(info.getName());
             dos.writeLong(info.getSize());
         }

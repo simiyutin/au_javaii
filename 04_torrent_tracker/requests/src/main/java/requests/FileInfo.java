@@ -19,7 +19,7 @@ public class FileInfo {
         this.size = size;
     }
 
-    public int getId() {
+    public int getFileId() {
         return id;
     }
 

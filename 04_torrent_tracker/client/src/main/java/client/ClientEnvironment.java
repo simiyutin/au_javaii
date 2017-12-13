@@ -18,7 +18,7 @@ public class ClientEnvironment {
     }
 
     public List<Integer> getSeedingFileIds() {
-        return seedingFiles.stream().map(FileInfo::getId).collect(Collectors.toList());
+        return seedingFiles.stream().map(FileInfo::getFileId).collect(Collectors.toList());
     }
 
     public List<Leech> getLeeches() {

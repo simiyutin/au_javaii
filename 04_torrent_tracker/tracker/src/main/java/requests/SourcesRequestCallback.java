@@ -1,12 +1,9 @@
 package requests;
 
-import requests.SourcesResponse.HostPort;
 import tracker.Peer;
 import tracker.TrackerEnvironment;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;

@@ -1,7 +1,6 @@
 package tracker;
 
-import requests.SourcesResponse;
-import requests.SourcesResponse.HostPort;
+import requests.HostPort;
 
 import java.net.Socket;
 

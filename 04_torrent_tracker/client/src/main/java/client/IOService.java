@@ -10,6 +10,10 @@ public class IOService {
         this.basePath = basePath;
     }
 
+    public String getBasePath() {
+        return basePath;
+    }
+
     public int scatter(File file, int partSize, int fileId) throws IOException {
         byte[] buffer = new byte[partSize];
         int bytesRead;
@@ -52,6 +56,10 @@ public class IOService {
         }
     }
 
+    public static int getNumberOfParts(long fileSize, int partSize) {
+        return (int) (fileSize - 1) / partSize + 1;
+    }
+
     public List<Integer> getAvailableFileParts(int fileId) {
         File dir = new File(String.format("%s/index/%d", basePath, fileId));
         File[] files = dir.listFiles();
@@ -63,11 +71,6 @@ public class IOService {
                 .map(f -> Integer.valueOf(f.getName()))
                 .collect(Collectors.toList());
     }
-
-//    public FilePart getPart(int fileId, int partId) throws FileNotFoundException {
-//        File partFile = new File(String.format("%s/index/%d/%d", basePath, fileId, partId));
-//        return new FilePart(Math.toIntExact(partFile.length()), new FileInputStream(partFile));
-//    }
 
     public void dumpFilePart(int fileId, int partId, OutputStream os) throws IOException {
         File partFile = new File(String.format("%s/index/%d/%d", basePath, fileId, partId));

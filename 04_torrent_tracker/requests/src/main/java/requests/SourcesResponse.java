@@ -19,24 +19,6 @@ public class SourcesResponse {
         return sources;
     }
 
-    public static class HostPort {
-        private byte[] ip;
-        private int clientPort;
-
-        public HostPort(byte[] ip, int clientPort) {
-            this.ip = ip;
-            this.clientPort = clientPort;
-        }
-
-        public byte[] getIp() {
-            return ip;
-        }
-
-        public int getClientPort() {
-            return clientPort;
-        }
-    }
-
     public static SourcesResponse parse(InputStream is) throws IOException {
         DataInputStream dis = new DataInputStream(is);
         int size = dis.readInt();
@@ -55,7 +37,7 @@ public class SourcesResponse {
         dos.writeInt(getSize());
         for (HostPort hp : getSources()) {
             dos.write(hp.getIp(), 0, 4);
-            dos.writeInt(hp.getClientPort());
+            dos.writeInt(hp.getPort());
         }
     }
 }
