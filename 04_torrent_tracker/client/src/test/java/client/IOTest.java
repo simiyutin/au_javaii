@@ -1,3 +1,5 @@
+package client;
+
 import client.IOService;
 import org.junit.Test;
 

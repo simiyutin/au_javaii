@@ -5,20 +5,20 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class IOService {
-    private final String basePath;
-    public IOService(String basePath) {
-        this.basePath = basePath;
+    private final String indexPath;
+    public IOService(String indexPath) {
+        this.indexPath = indexPath;
     }
 
-    public String getBasePath() {
-        return basePath;
+    public String getIndexPath() {
+        return indexPath;
     }
 
     public int scatter(File file, int partSize, int fileId) throws IOException {
         byte[] buffer = new byte[partSize];
         int bytesRead;
         int numberOfParts = 0;
-        File dir = new File(String.format("%s/%d", basePath, fileId));
+        File dir = new File(String.format("%s/%d", indexPath, fileId));
         dir.mkdirs();
         if (file.exists() && file.length() == 0) {
             new File(dir, String.valueOf(0)).createNewFile();
@@ -37,7 +37,7 @@ public class IOService {
     }
 
     public void gather(int fileId, String name, String targetDir) throws IOException {
-        String partsDir = String.format("%s/%d", basePath, fileId);
+        String partsDir = String.format("%s/%d", indexPath, fileId);
         File dir = new File(partsDir);
         if (!dir.exists()) {
             throw new FileNotFoundException(partsDir);
@@ -66,7 +66,7 @@ public class IOService {
     }
 
     public List<Integer> getAvailableFileParts(int fileId) {
-        File dir = new File(String.format("%s/%d", basePath, fileId));
+        File dir = new File(String.format("%s/%d", indexPath, fileId));
         File[] files = dir.listFiles();
         if (files == null) {
             return new ArrayList<>();
@@ -78,7 +78,7 @@ public class IOService {
     }
 
     public void dumpFilePart(int fileId, int partId, OutputStream os) throws IOException {
-        File partFile = new File(String.format("%s/%d/%d", basePath, fileId, partId));
+        File partFile = new File(String.format("%s/%d/%d", indexPath, fileId, partId));
         int size = Math.toIntExact(partFile.length());
         try (
                 FileInputStream fis = new FileInputStream(partFile);

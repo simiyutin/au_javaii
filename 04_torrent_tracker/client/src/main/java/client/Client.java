@@ -30,6 +30,13 @@ public class Client {
         startPeerServerThread();
     }
 
+    // for testing
+    void start(int clientPort, String indexPath) throws IOException {
+        environment = new PeerEnvironment(indexPath);
+        serverSocket = new ServerSocket(clientPort);
+        startPeerServerThread();
+    }
+
     public void stop() {
         try {
             serverSocket.close();
@@ -37,7 +44,9 @@ public class Client {
             e.printStackTrace();
         }
         try {
-            trackerSocket.close();
+            if (trackerSocket != null) {
+                trackerSocket.close();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -93,7 +102,7 @@ public class Client {
                 return;
             }
             final DownloadEnvironment downloadEnvironment =
-                    new DownloadEnvironment(seeds, environment.getIoService().getBasePath(), fileInfo);
+                    new DownloadEnvironment(seeds, environment.getIoService().getIndexPath(), fileInfo);
 
             Thread updater = new Thread(() -> {
                 while (true) {
@@ -111,27 +120,31 @@ public class Client {
             });
             updater.start();
 
-            final int numberOfParts = IOService.getNumberOfParts(fileInfo.getSize(), PART_SIZE);
-            final List<Thread> downloaders = new ArrayList<>();
-            for (int i = 0; i < numberOfParts; i++) {
-                downloaders.add(new Thread(new DownloadTask(downloadEnvironment, i)));
-                downloaders.get(i).start();
-            }
-
-            for (Thread t : downloaders) {
-                try {
-                    t.join();
-                    environment.getSeedingFiles().add(fileInfo);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
+            downloadFromSeeds(fileInfo, downloadEnvironment);
 
             updater.interrupt();
             environment.getIoService().gather(fileInfo.getFileId(), fileInfo.getName(), targetDir);
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    void downloadFromSeeds(FileInfo fileInfo, DownloadEnvironment downloadEnvironment) {
+        final int numberOfParts = IOService.getNumberOfParts(fileInfo.getSize(), PART_SIZE);
+        final List<Thread> downloaders = new ArrayList<>();
+        for (int i = 0; i < numberOfParts; i++) {
+            downloaders.add(new Thread(new DownloadTask(downloadEnvironment, i)));
+            downloaders.get(i).start();
+        }
+
+        for (Thread t : downloaders) {
+            try {
+                t.join();
+                environment.getSeedingFiles().add(fileInfo);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
