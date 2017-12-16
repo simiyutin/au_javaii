@@ -88,7 +88,6 @@ public class IOService {
             byte[] buffer = new byte[size];
             fis.read(buffer);
             os.write(buffer);
-//            move(fis, os);
         }
     }
 

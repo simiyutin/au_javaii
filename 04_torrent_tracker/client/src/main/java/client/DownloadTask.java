@@ -44,7 +44,6 @@ public class DownloadTask implements Runnable {
         GetRequest request = new GetRequest(fileId, partId);
         request.dump(socket.getOutputStream());
         DataInputStream dis = new DataInputStream(socket.getInputStream());
-        //todo протестить, останавливается ли move без спецификации size и убрать size вообще, если останавливается
         int size = dis.readInt();
         String filePath = String.format("%s/%d/%d", environment.getIndexPath(), fileId, partId);
         File partFile = new File(filePath);
@@ -55,6 +54,5 @@ public class DownloadTask implements Runnable {
         byte[] buffer = new byte[size];
         socket.getInputStream().read(buffer);
         fos.write(buffer);
-//        IOService.move(socket.getInputStream(), fos);
     }
 }
