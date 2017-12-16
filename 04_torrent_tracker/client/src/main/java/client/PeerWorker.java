@@ -9,9 +9,9 @@ import java.net.SocketException;
 
 public class PeerWorker implements Runnable {
     private final Leech leech;
-    private final ClientEnvironment environment;
+    private final PeerEnvironment environment;
 
-    public PeerWorker(Leech leech, ClientEnvironment environment) {
+    public PeerWorker(Leech leech, PeerEnvironment environment) {
         this.leech = leech;
         this.environment = environment;
     }

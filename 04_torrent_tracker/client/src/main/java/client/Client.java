@@ -2,15 +2,11 @@ package client;
 
 import requests.*;
 
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 // отправляет и делает запросы
@@ -20,14 +16,14 @@ import java.util.concurrent.TimeUnit;
 public class Client {
     private Socket trackerSocket = null;
     private ServerSocket serverSocket = null;
-    private ClientEnvironment environment = null;
+    private PeerEnvironment environment = null;
     private final int TRACKER_PORT = 8081;
     private final int UPDATE_INTERVAL_MINUTES = 4;
     private final int PART_SIZE = 1024;
 
 
     public void start(int clientPort, String trackerHost, String indexPath) throws IOException {
-        environment = new ClientEnvironment(indexPath);
+        environment = new PeerEnvironment(indexPath);
         serverSocket = new ServerSocket(clientPort);
         trackerSocket = new Socket(trackerHost, TRACKER_PORT);
 //        startDaemonThread(clientPort);
@@ -35,7 +31,17 @@ public class Client {
     }
 
     public void stop() {
-        throw new UnsupportedOperationException();
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            trackerSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //todo stop threads
     }
 
     public void uploadFile(String path) throws IOException {
@@ -152,8 +158,9 @@ public class Client {
                     }
                     new Thread(new PeerWorker(leech, environment)).start();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+            }
+            catch (IOException e) {
+                //todo log
             }
         }).start();
     }

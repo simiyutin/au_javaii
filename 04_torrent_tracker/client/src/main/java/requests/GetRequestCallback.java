@@ -1,7 +1,6 @@
 package requests;
 
-import client.ClientEnvironment;
-import client.IOService;
+import client.PeerEnvironment;
 import client.Leech;
 
 import java.io.IOException;
@@ -15,7 +14,7 @@ public class GetRequestCallback implements ClientRequestCallback {
 
 
     @Override
-    public void execute(Leech leech, ClientEnvironment environment) throws IOException {
+    public void execute(Leech leech, PeerEnvironment environment) throws IOException {
         int fileId = request.getId();
         int partId = request.getPart();
         environment.getIoService().dumpFilePart(fileId, partId, leech.getSocket().getOutputStream());

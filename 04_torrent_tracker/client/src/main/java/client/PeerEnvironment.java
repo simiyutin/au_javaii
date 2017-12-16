@@ -8,12 +8,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ClientEnvironment {
+public class PeerEnvironment {
     private final Set<FileInfo> seedingFiles = new HashSet<>();
     private final List<Leech> leeches = new ArrayList<>();
     private final IOService ioService;
 
-    public ClientEnvironment(String indexPath) {
+    public PeerEnvironment(String indexPath) {
         this.ioService = new IOService(indexPath);
     }
 

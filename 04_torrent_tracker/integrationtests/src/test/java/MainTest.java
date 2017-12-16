@@ -11,6 +11,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
@@ -21,8 +22,25 @@ public class MainTest {
     private final String indexPathSnd = basePath + "/index_snd/";
     private final String downloadsPath = basePath + "/downloads/";
 
+    private void clearFolders() {
+        rmrf(indexPathFst);
+        rmrf(indexPathSnd);
+        rmrf(downloadsPath);
+    }
+
+    private void prepareTest() {
+//        try {
+//            TimeUnit.SECONDS.sleep(1);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+        clearFolders();
+    }
+
     @Test
     public void testUpload() throws IOException {
+        prepareTest();
+
         Tracker tracker = new Tracker();
         tracker.start();
         Client client = new Client();
@@ -36,10 +54,14 @@ public class MainTest {
         FileInfo expectedInfo = new FileInfo(0, file.getName(), file.length());
 
         assertEquals(expectedInfo, listInfo.iterator().next());
+        tracker.stop();
+        client.stop();
     }
 
     @Test
     public void testSources() throws IOException {
+        prepareTest();
+
         Tracker tracker = new Tracker();
         tracker.start();
         Client client = new Client();
@@ -58,6 +80,8 @@ public class MainTest {
         HostPort actual = sources.get(0);
 
         assertEquals(expected, actual);
+        tracker.stop();
+        client.stop();
     }
 
     @Test
@@ -71,6 +95,8 @@ public class MainTest {
     }
 
     private void testUploadDownload(String fileName) throws IOException {
+        prepareTest();
+
         Tracker tracker = new Tracker();
         tracker.start();
         Client client = new Client();
@@ -93,6 +119,9 @@ public class MainTest {
 
         assertTrue(expected.length() == actual.length());
         assertBinaryEquals(expected, actual);
+        tracker.stop();
+        client.stop();
+        client2.stop();
     }
 
 
@@ -159,5 +188,19 @@ public class MainTest {
         } catch (IOException var18) {
             throw new AssertionFailedError(var18);
         }
+    }
+
+    public static void rmrf(String path) {
+        rmrf(new File(path));
+    }
+
+    public static void rmrf(File file) {
+        File[] contents = file.listFiles();
+        if (contents != null) {
+            for (File f : contents) {
+                rmrf(f);
+            }
+        }
+        file.delete();
     }
 }
