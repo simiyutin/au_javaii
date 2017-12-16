@@ -11,7 +11,8 @@ import static junitx.framework.FileAssert.assertBinaryEquals;
 
 public class IOTest {
     private final String basePath = "src/test/resources/";
-    private final IOService ioService = new IOService(basePath);
+    private final String indexPath = basePath + "/index/";
+    private final IOService ioService = new IOService(indexPath);
 
     private void runScatterGather(String fileName, int fileId) throws IOException {
         runScatterGather(fileName, fileId, 2);
