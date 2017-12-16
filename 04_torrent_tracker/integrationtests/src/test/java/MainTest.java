@@ -30,11 +30,11 @@ public class MainTest {
     }
 
     private void prepareTest() {
-//        try {
-//            TimeUnit.SECONDS.sleep(1);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
+        try {
+            TimeUnit.MILLISECONDS.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         clearFolders();
     }
 
@@ -123,7 +123,6 @@ public class MainTest {
         File expected = new File(basePath + fileName);
         File actual = new File(downloadsPath + fileName);
 
-        assertTrue(expected.length() == actual.length());
         assertBinaryEquals(expected, actual);
         tracker.stop();
         client.stop();
@@ -172,6 +171,48 @@ public class MainTest {
 
         tracker.stop();
         client.stop();
+    }
+
+    @Test
+    public void testRestoringStateClient() throws IOException {
+        prepareTest();
+        String fileName = "kitty.jpg";
+
+        Tracker tracker = new Tracker();
+        tracker.start();
+        Client client = new Client();
+        client.start(11111, "localhost", indexPathFst);
+
+        client.uploadFile(basePath + fileName);
+        client.updateTracker();
+
+        client.stop();
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        client = new Client();
+        client.start(11113, "localhost", indexPathFst);
+        client.updateTracker();
+
+        Client client2 = new Client();
+        client2.start(11112, "localhost", indexPathSnd);
+
+        Set<FileInfo> infoList = client2.listTracker();
+        assertTrue(infoList.size() == 1);
+        FileInfo fileInfo = infoList.iterator().next();
+
+        client2.downloadFile(fileInfo, downloadsPath);
+
+        File expected = new File(basePath + fileName);
+        File actual = new File(downloadsPath + fileName);
+
+        assertBinaryEquals(expected, actual);
+        tracker.stop();
+        client.stop();
+        client2.stop();
+
     }
 
     public static void assertBinaryEquals(File expected, File actual) {

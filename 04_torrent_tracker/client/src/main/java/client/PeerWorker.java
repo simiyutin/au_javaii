@@ -23,9 +23,12 @@ public class PeerWorker implements Runnable {
                 break;
             }
             try {
+                System.out.println(String.format("%d peer worker wait for request", Thread.currentThread().getId()));
                 ClientRequestCallback callback = ClientRequestCallbackFactory.parseRequest(leech.getSocket().getInputStream());
+                System.out.println(String.format("%d peer worker got request", Thread.currentThread().getId()));
                 callback.execute(leech, environment);
             } catch (EOFException | SocketException e) {
+
                 return;
             } catch (IOException e) {
                 e.printStackTrace();

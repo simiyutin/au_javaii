@@ -1,5 +1,7 @@
 package client;
 
+import requests.FileInfo;
+
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -15,15 +17,20 @@ public class IOService {
     }
 
     public int scatter(File file, int partSize, int fileId) throws IOException {
-        byte[] buffer = new byte[partSize];
-        int bytesRead;
-        int numberOfParts = 0;
+        if (!file.exists()) {
+            throw new FileNotFoundException(file.getPath());
+        }
+
         File dir = new File(String.format("%s/%d", indexPath, fileId));
         dir.mkdirs();
-        if (file.exists() && file.length() == 0) {
+        if (file.length() == 0) {
             new File(dir, String.valueOf(0)).createNewFile();
             return 0;
         }
+
+        byte[] buffer = new byte[partSize];
+        int bytesRead;
+        int numberOfParts = 0;
         try (FileInputStream fis = new FileInputStream(file)) {
             while ((bytesRead = fis.read(buffer)) != -1) {
                 File partFile = new File(dir, String.valueOf(numberOfParts++));
@@ -34,6 +41,18 @@ public class IOService {
             }
         }
         return numberOfParts;
+    }
+
+    public static void writeMeta(FileInfo fileInfo, String indexPath) throws IOException {
+        File meta = new File(String.format("%s/meta%d", indexPath, fileInfo.getFileId()));
+        if (meta.exists()) {
+            return;
+        }
+        meta.getParentFile().mkdirs();
+        try (DataOutputStream dos = new DataOutputStream(new FileOutputStream(meta))) {
+            dos.writeUTF(fileInfo.getName());
+            dos.writeLong(fileInfo.getSize());
+        }
     }
 
     public void gather(int fileId, String name, String targetDir) throws IOException {

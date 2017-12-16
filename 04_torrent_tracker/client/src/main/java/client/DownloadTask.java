@@ -54,5 +54,7 @@ public class DownloadTask implements Runnable {
         byte[] buffer = new byte[size];
         socket.getInputStream().read(buffer);
         fos.write(buffer);
+
+        IOService.writeMeta(environment.getFileInfo(), environment.getIndexPath());
     }
 }

@@ -9,10 +9,9 @@ import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-// отправляет и делает запросы
-// нужен тред, который будет обслуживать входящие соединения
-// и тред, который будет делать запросы к серверу каждые 5 минут
-// и тред, который будет отвечать на запросы пользователя. Видимо, это просто главный тред программы
+// сохраняет свое состояние двумя частями:
+// список раздаваемых файлов лежит в файлах meta
+// запросы на обрабатываемые кусочки обрабатываются с просмотром соответствующих директорий
 public class Client {
     private Socket trackerSocket = null;
     private ServerSocket serverSocket = null;
@@ -37,6 +36,11 @@ public class Client {
         startPeerServerThread();
     }
 
+    // for testing
+    PeerEnvironment getEnvironment() {
+        return environment;
+    }
+
     public void stop() {
         try {
             serverSocket.close();
@@ -50,7 +54,6 @@ public class Client {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //todo stop threads
     }
 
     public void uploadFile(String path) throws IOException {
@@ -62,8 +65,9 @@ public class Client {
         request.dump(trackerSocket.getOutputStream());
         UploadResponse response = UploadResponse.parse(trackerSocket.getInputStream());
         environment.getIoService().scatter(file, PART_SIZE, response.getId());
-        FileInfo info = new FileInfo(response.getId(), file.getName(), file.length());
-        environment.getSeedingFiles().add(info);
+        FileInfo fileInfo = new FileInfo(response.getId(), file.getName(), file.length());
+        IOService.writeMeta(fileInfo, environment.getIoService().getIndexPath());
+        environment.getSeedingFiles().add(fileInfo);
     }
 
     public void updateTracker() throws IOException {
@@ -167,8 +171,9 @@ public class Client {
         new Thread(() -> {
             try {
                 while (true) {
-                    System.out.println("client: waiting for leech");
+                    System.out.println(String.format("%d peer server waiting for leach", Thread.currentThread().getId()));
                     Socket socket = serverSocket.accept();
+                    System.out.println(String.format("%d peer server got leach", Thread.currentThread().getId()));
                     Leech leech = new Leech(socket);
                     synchronized (environment) {
                         environment.getLeeches().add(leech);
@@ -177,7 +182,7 @@ public class Client {
                 }
             }
             catch (IOException e) {
-                //todo log
+                System.out.println("peer server ended");
             }
         }).start();
     }
