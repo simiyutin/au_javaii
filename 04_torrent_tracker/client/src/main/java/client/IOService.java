@@ -20,6 +20,10 @@ public class IOService {
         int numberOfParts = 0;
         File dir = new File(String.format("%s/%d", basePath, fileId));
         dir.mkdirs();
+        if (file.exists() && file.length() == 0) {
+            new File(dir, String.valueOf(0)).createNewFile();
+            return 0;
+        }
         try (FileInputStream fis = new FileInputStream(file)) {
             while ((bytesRead = fis.read(buffer)) != -1) {
                 File partFile = new File(dir, String.valueOf(numberOfParts++));
@@ -33,10 +37,6 @@ public class IOService {
     }
 
     public void gather(int fileId, String name, String targetDir) throws IOException {
-        File targetFile = new File(String.format("%s/%s", targetDir, name));
-        targetFile.getParentFile().mkdirs();
-        targetFile.createNewFile();
-
         String partsDir = String.format("%s/%d", basePath, fileId);
         File dir = new File(partsDir);
         if (!dir.exists()) {
@@ -44,8 +44,13 @@ public class IOService {
         }
         File[] parts = dir.listFiles();
         if (parts == null) {
-            throw new IOException("error while reading " + partsDir);
+            throw new RuntimeException("error occurred while reading path");
         }
+
+        File targetFile = new File(String.format("%s/%s", targetDir, name));
+        targetFile.getParentFile().mkdirs();
+        targetFile.createNewFile();
+
         Arrays.sort(parts, Comparator.comparing(f -> Integer.valueOf(f.getName())));
         try(FileOutputStream targetStream = new FileOutputStream(targetFile)) {
             for (File part : parts) {

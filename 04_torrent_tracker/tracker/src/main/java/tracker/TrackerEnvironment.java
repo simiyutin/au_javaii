@@ -30,7 +30,8 @@ public class TrackerEnvironment {
 
     public Set<Peer> getPeers(int fileId) {
         FileInfo info = new FileInfo(fileId);
-        return index.get(info);
+        Set<Peer> peers = index.get(info);
+        return peers == null ? new HashSet<>() : peers;
     }
 
     public Map<FileInfo, Set<Peer>> getIndex() {

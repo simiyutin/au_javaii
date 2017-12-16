@@ -46,6 +46,9 @@ public class Client {
 
     public void uploadFile(String path) throws IOException {
         File file = new File(path);
+        if (!file.exists()) {
+            return;
+        }
         UploadRequest request = new UploadRequest(file.getName(), file.length());
         request.dump(trackerSocket.getOutputStream());
         UploadResponse response = UploadResponse.parse(trackerSocket.getInputStream());
@@ -86,8 +89,9 @@ public class Client {
         try {
 
             final Map<Integer, Set<HostPort>> seeds = getSeeds(fileInfo);
-            System.out.println("seeds: ");
-            System.out.println(seeds);
+            if (seeds.size() == 0) {
+                return;
+            }
             final DownloadEnvironment downloadEnvironment =
                     new DownloadEnvironment(seeds, environment.getIoService().getBasePath(), fileInfo);
 

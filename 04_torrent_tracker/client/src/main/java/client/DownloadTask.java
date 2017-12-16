@@ -22,6 +22,7 @@ public class DownloadTask implements Runnable {
     public void run() {
         while (true) {
             // todo synchronization
+            // todo wait until new seeds
             if (!environment.getSeeds().containsKey(partId)) {
                 continue;
             }

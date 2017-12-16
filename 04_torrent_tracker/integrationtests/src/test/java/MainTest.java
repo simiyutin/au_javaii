@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 
 public class MainTest {
@@ -94,6 +95,11 @@ public class MainTest {
         testUploadDownload("kitty.jpg");
     }
 
+    @Test
+    public void testUploadDownloadEmpty() throws IOException {
+        testUploadDownload("empty.txt");
+    }
+
     private void testUploadDownload(String fileName) throws IOException {
         prepareTest();
 
@@ -124,6 +130,49 @@ public class MainTest {
         client2.stop();
     }
 
+    @Test
+    public void testDownloadNotExists() throws IOException {
+        prepareTest();
+
+        String fileName = "notexists.txt";
+
+        Tracker tracker = new Tracker();
+        tracker.start();
+
+        Client client2 = new Client();
+        client2.start(11112, "localhost", indexPathSnd);
+
+        Set<FileInfo> infoList = client2.listTracker();
+        assertTrue(infoList.size() == 0);
+        FileInfo fileInfo = new FileInfo(0, fileName, 100);
+
+        client2.downloadFile(fileInfo, downloadsPath);
+
+        File actual = new File(downloadsPath + fileName);
+        assertFalse(actual.exists());
+
+        tracker.stop();
+        client2.stop();
+    }
+
+    @Test
+    public void testUploadNotExists() throws IOException {
+        prepareTest();
+
+        String fileName = "notexists.txt";
+
+        Tracker tracker = new Tracker();
+        tracker.start();
+        Client client = new Client();
+        client.start(11111, "localhost", indexPathFst);
+
+        client.uploadFile(basePath + fileName);
+        client.updateTracker();
+        assertTrue(client.listTracker().size() == 0);
+
+        tracker.stop();
+        client.stop();
+    }
 
     public static void assertBinaryEquals(File expected, File actual) {
         assertBinaryEquals((String)null, expected, actual);
