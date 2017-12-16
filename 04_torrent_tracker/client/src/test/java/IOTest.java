@@ -18,7 +18,7 @@ public class IOTest {
     private void runScatterGather(String fileName, int fileId, int partSize) throws IOException {
         File expected = new File(basePath + fileName);
         ioService.scatter(expected, partSize, fileId);
-        ioService.gather(fileId, fileName);
+        ioService.gather(fileId, fileName, basePath + "/downloads/");
         File actual = new File(basePath + "/downloads/" + fileName);
         assertBinaryEquals(expected, actual);
     }
@@ -52,6 +52,6 @@ public class IOTest {
     public void testGatherNotExists() throws IOException {
         String filename = "foo.txt";
         int idNotExists = 4;
-        ioService.gather(idNotExists, filename);
+        ioService.gather(idNotExists, filename, basePath + "/downloads/");
     }
 }

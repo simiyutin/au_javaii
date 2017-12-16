@@ -1,0 +1,163 @@
+import client.Client;
+import junitx.framework.Assert;
+import junitx.framework.AssertionFailedError;
+import org.junit.Test;
+import requests.FileInfo;
+import requests.HostPort;
+import tracker.Tracker;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.List;
+import java.util.Set;
+
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
+
+public class MainTest {
+    private final String basePath = "src/test/resources/";
+    private final String indexPathFst = basePath + "/index_fst/";
+    private final String indexPathSnd = basePath + "/index_snd/";
+    private final String downloadsPath = basePath + "/downloads/";
+
+    @Test
+    public void testUpload() throws IOException {
+        Tracker tracker = new Tracker();
+        tracker.start();
+        Client client = new Client();
+        client.start(11111, "localhost", indexPathFst);
+
+        File file = new File(basePath + "test.txt");
+        client.uploadFile(file.getPath());
+        Set<FileInfo> listInfo = client.listTracker();
+
+        assertTrue(listInfo.size() == 1);
+        FileInfo expectedInfo = new FileInfo(0, file.getName(), file.length());
+
+        assertEquals(expectedInfo, listInfo.iterator().next());
+    }
+
+    @Test
+    public void testSources() throws IOException {
+        Tracker tracker = new Tracker();
+        tracker.start();
+        Client client = new Client();
+        client.start(11111, "localhost", indexPathFst);
+
+        File file = new File(basePath + "test.txt");
+        client.uploadFile(file.getPath());
+
+        client.updateTracker();
+
+        List<HostPort> sources = client.executeSources(0);
+
+        assertEquals(1, sources.size());
+        byte[] ip = {127, 0, 0, 1};
+        HostPort expected = new HostPort(ip, 11111);
+        HostPort actual = sources.get(0);
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testUploadDownloadText() throws IOException {
+        testUploadDownload("test.txt");
+    }
+
+    @Test
+    public void testUploadDownloadBinary() throws IOException {
+        testUploadDownload("kitty.jpg");
+    }
+
+    private void testUploadDownload(String fileName) throws IOException {
+        Tracker tracker = new Tracker();
+        tracker.start();
+        Client client = new Client();
+        client.start(11111, "localhost", indexPathFst);
+
+        client.uploadFile(basePath + fileName);
+        client.updateTracker();
+
+        Client client2 = new Client();
+        client2.start(11112, "localhost", indexPathSnd);
+
+        Set<FileInfo> infoList = client2.listTracker();
+        assertTrue(infoList.size() == 1);
+        FileInfo fileInfo = infoList.iterator().next();
+
+        client2.downloadFile(fileInfo, downloadsPath);
+
+        File expected = new File(basePath + fileName);
+        File actual = new File(downloadsPath + fileName);
+
+        assertTrue(expected.length() == actual.length());
+        assertBinaryEquals(expected, actual);
+    }
+
+
+    public static void assertBinaryEquals(File expected, File actual) {
+        assertBinaryEquals((String)null, expected, actual);
+    }
+
+    public static void assertBinaryEquals(String message, File expected, File actual) {
+        Assert.assertNotNull(message, expected);
+        Assert.assertNotNull(message, actual);
+        Assert.assertTrue("File does not exist [" + expected.getAbsolutePath() + "]", expected.exists());
+        Assert.assertTrue("File does not exist [" + actual.getAbsolutePath() + "]", actual.exists());
+        Assert.assertTrue("Expected file not readable", expected.canRead());
+        Assert.assertTrue("Actual file not readable", actual.canRead());
+        FileInputStream eis = null;
+        FileInputStream ais = null;
+
+        try {
+            try {
+                eis = new FileInputStream(expected);
+                ais = new FileInputStream(actual);
+                Assert.assertNotNull(message, expected);
+                Assert.assertNotNull(message, actual);
+
+                byte[] expBuff = new byte[8192];
+                byte[] actBuff = new byte[8192];
+                long pos = 0L;
+
+                while (true) {
+
+                    int expLength = eis.read(expBuff, 0, 8192);
+                    int actLength = ais.read(actBuff, 0, 8192);
+                    if (expLength < actLength) {
+                        Assert.fail("actual file is longer");
+                    }
+
+                    if (expLength > actLength) {
+                        Assert.fail("actual file is shorter");
+                    }
+
+                    if (expLength == -1) {
+                        return;
+                    }
+
+                    for(int i = 0; i < expLength; ++i) {
+                        if (expBuff[i] != actBuff[i]) {
+                            String formatted = "";
+                            if (message != null) {
+                                formatted = message + " ";
+                            }
+
+                            Assert.fail(formatted + "files differ at byte " + (pos + (long)i + 1L));
+                        }
+                    }
+
+                    pos += 8192;
+                }
+
+            } finally {
+                eis.close();
+                ais.close();
+            }
+
+        } catch (IOException var18) {
+            throw new AssertionFailedError(var18);
+        }
+    }
+}

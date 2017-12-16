@@ -6,6 +6,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
@@ -19,16 +20,17 @@ import java.util.concurrent.TimeUnit;
 public class Client {
     private Socket trackerSocket = null;
     private ServerSocket serverSocket = null;
-    private final ClientEnvironment environment = new ClientEnvironment();
+    private ClientEnvironment environment = null;
     private final int TRACKER_PORT = 8081;
     private final int UPDATE_INTERVAL_MINUTES = 4;
     private final int PART_SIZE = 1024;
 
 
-    public void start(int clientPort, String trackerHost) throws IOException {
+    public void start(int clientPort, String trackerHost, String indexPath) throws IOException {
+        environment = new ClientEnvironment(indexPath);
         serverSocket = new ServerSocket(clientPort);
         trackerSocket = new Socket(trackerHost, TRACKER_PORT);
-        startDaemonThread(clientPort);
+//        startDaemonThread(clientPort);
         startPeerServerThread();
     }
 
@@ -46,6 +48,15 @@ public class Client {
         environment.getSeedingFiles().add(info);
     }
 
+    public void updateTracker() throws IOException {
+        UpdateRequest updateRequest = new UpdateRequest(serverSocket.getLocalPort(), environment.getSeedingFileIds());
+        updateRequest.dump(trackerSocket.getOutputStream());
+        UpdateResponse updateResponse = UpdateResponse.parse(trackerSocket.getInputStream());
+        if (!updateResponse.getStatus()) {
+            System.out.println("bad update status!");
+        }
+    }
+
     public Set<FileInfo> listTracker() {
         try {
             ListRequest request = new ListRequest();
@@ -58,40 +69,56 @@ public class Client {
         return null;
     }
 
-    public void downloadFile(FileInfo fileInfo) {
+    public List<HostPort> executeSources(int fileId) throws IOException {
+        SourcesRequest request = new SourcesRequest(fileId);
+        request.dump(trackerSocket.getOutputStream());
+        SourcesResponse response = SourcesResponse.parse(trackerSocket.getInputStream());
+        return response.getSources();
+    }
+
+    public void downloadFile(FileInfo fileInfo, String targetDir) {
         try {
 
-            SourcesRequest request = new SourcesRequest(fileInfo.getFileId());
-            request.dump(trackerSocket.getOutputStream());
-            SourcesResponse response = SourcesResponse.parse(trackerSocket.getInputStream());
+            final Map<Integer, Set<HostPort>> seeds = getSeeds(fileInfo);
+            System.out.println("seeds: ");
+            System.out.println(seeds);
+            final DownloadEnvironment downloadEnvironment =
+                    new DownloadEnvironment(seeds, environment.getIoService().getBasePath(), fileInfo);
 
-            Set<Integer> partsLeft = ConcurrentHashMap.newKeySet();
-            int numberOfParts = IOService.getNumberOfParts(fileInfo.getSize(), PART_SIZE);
-            for (int i = 0; i < numberOfParts; i++) {
-                partsLeft.add(i);
-            }
-
-            while (partsLeft.size() > 0) {
-                Map<Integer, Set<HostPort>> seeds = getSeeds(partsLeft, response.getSources(), fileInfo.getFileId());
-                seeds.forEach((partId, peers) -> {
-                    while (peers.size() > 0) {
-                        Iterator<HostPort> it = peers.iterator();
-                        try {
-                            HostPort hostPort = it.next();
-                            Socket socket = new Socket(hostPort.getInetAddress(), hostPort.getPort());
-                            downloadPart(socket, fileInfo.getFileId(), partId);
-                            partsLeft.remove(partId);
-                            environment.getSeedingFiles().add(fileInfo);
-                            break;
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            it.remove();
-                        }
+            Thread updater = new Thread(() -> {
+                while (true) {
+                    try {
+                        TimeUnit.MINUTES.sleep(4);
+                    } catch (InterruptedException e) {
+                        return;
                     }
-                });
+                    try {
+                        downloadEnvironment.updateSeeds(getSeeds(fileInfo));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            updater.start();
+
+            final int numberOfParts = IOService.getNumberOfParts(fileInfo.getSize(), PART_SIZE);
+            final List<Thread> downloaders = new ArrayList<>();
+            for (int i = 0; i < numberOfParts; i++) {
+                downloaders.add(new Thread(new DownloadTask(downloadEnvironment, i)));
+                downloaders.get(i).start();
             }
 
-            environment.getIoService().gather(fileInfo.getFileId(), fileInfo.getName());
+            for (Thread t : downloaders) {
+                try {
+                    t.join();
+                    environment.getSeedingFiles().add(fileInfo);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            updater.interrupt();
+            environment.getIoService().gather(fileInfo.getFileId(), fileInfo.getName(), targetDir);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -100,12 +127,8 @@ public class Client {
 
     private void startDaemonThread(int clientPort) {
         new Thread(() -> {
-            UpdateRequest request;
-            synchronized (environment) {
-                request = new UpdateRequest(clientPort, environment.getSeedingFileIds());
-            }
             try {
-                request.dump(trackerSocket.getOutputStream());
+                updateTracker();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -127,7 +150,7 @@ public class Client {
                     synchronized (environment) {
                         environment.getLeeches().add(leech);
                     }
-                    new Thread(new ClientWorker(leech, environment)).start();
+                    new Thread(new PeerWorker(leech, environment)).start();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -135,18 +158,22 @@ public class Client {
         }).start();
     }
 
-    private Map<Integer, Set<HostPort>> getSeeds(Set<Integer> partsLeft, List<HostPort> sources, int fileId) {
+    private Map<Integer, Set<HostPort>> getSeeds(FileInfo fileInfo) throws IOException {
+        SourcesRequest request = new SourcesRequest(fileInfo.getFileId());
+        request.dump(trackerSocket.getOutputStream());
+        SourcesResponse response = SourcesResponse.parse(trackerSocket.getInputStream());
+
         Map<Integer, Set<HostPort>> seeds = new HashMap<>();
-        for (Integer pendingPart : partsLeft) {
-            seeds.put(pendingPart, new HashSet<>());
-        }
-        for (HostPort hostPort : sources) {
+        for (HostPort hostPort : response.getSources()) {
             try {
                 Socket seedSocket = new Socket(hostPort.getInetAddress(), hostPort.getPort());
-                StatRequest statRequest = new StatRequest(fileId);
+                StatRequest statRequest = new StatRequest(fileInfo.getFileId());
                 statRequest.dump(seedSocket.getOutputStream());
                 StatResponse seedResponse = StatResponse.parse(seedSocket.getInputStream());
                 for (Integer part : seedResponse.getParts()) {
+                    if (!seeds.containsKey(part)) {
+                        seeds.put(part, new HashSet<>());
+                    }
                     seeds.get(part).add(hostPort);
                 }
             } catch (IOException ex) {
@@ -156,19 +183,6 @@ public class Client {
         return seeds;
     }
 
-    private void downloadPart(Socket socket, int fileId, int partId) throws IOException {
-        GetRequest request = new GetRequest(fileId, partId);
-        request.dump(socket.getOutputStream());
-        DataInputStream dis = new DataInputStream(socket.getInputStream());
-        //todo протестить, останавливается ли move без спецификации size и убрать size вообще, если останавливается
-        int size = dis.readInt();
-        String filePath = String.format("%s/index/%d/%d", environment.getIoService().getBasePath(), fileId, partId);
-        File partFile = new File(filePath);
-        partFile.getParentFile().mkdirs();
-        partFile.createNewFile();
 
-        FileOutputStream fos = new FileOutputStream(partFile);
-        IOService.move(socket.getInputStream(), fos);
-    }
 
 }

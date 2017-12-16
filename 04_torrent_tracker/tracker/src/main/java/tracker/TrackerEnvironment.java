@@ -5,11 +5,27 @@ import requests.FileInfo;
 import java.util.*;
 
 public class TrackerEnvironment {
-    private final List<Peer> peers = new ArrayList<>();
+    private final Set<Peer> peers = new HashSet<>();
     private final Map<FileInfo, Set<Peer>> index = new HashMap<>();
 
-    public List<Peer> getPeers() {
+    public Set<Peer> getPeers() {
         return peers;
+    }
+
+    public void updatePeerForFile(Peer peer, int fileId) {
+        FileInfo fakeInfo = new FileInfo(fileId);
+        Set<Peer> filePeers = index.get(fakeInfo);
+        if (filePeers == null) {
+            return;
+        }
+
+        filePeers.remove(peer);
+        filePeers.add(peer);
+    }
+
+    public void updatePeer(Peer peer) {
+        peers.remove(peer);
+        peers.add(peer);
     }
 
     public Set<Peer> getPeers(int fileId) {
@@ -21,12 +37,10 @@ public class TrackerEnvironment {
         return index;
     }
 
-    public int addFile(Peer peer, String name, long size) {
+    public int addFile(String name, long size) {
         int id = index.keySet().size();
         FileInfo info = new FileInfo(id, name, size);
-        Set<Peer> peers = new HashSet<>();
-        peers.add(peer);
-        index.put(info, peers);
+        index.put(info, new HashSet<>());
         return id;
     }
 

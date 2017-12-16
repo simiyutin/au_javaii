@@ -3,19 +3,16 @@ package tracker;
 import requests.HostPort;
 
 import java.net.Socket;
+import java.util.Objects;
 
 public class Peer {
     private volatile long lastUpdate;
-    private final Socket socket;
+    private final HostPort hostPort;
     public static final long MAX_LIFE_MINS = 5;
 
-    public Peer(Socket socket) {
-        this.socket = socket;
-        update();
-    }
-
-    public long getLastUpdate() {
-        return lastUpdate;
+    public Peer(HostPort hostPort) {
+        this.hostPort = hostPort;
+        this.lastUpdate = System.currentTimeMillis();
     }
 
     public boolean outdated() {
@@ -24,23 +21,21 @@ public class Peer {
         return diff > maxdiff;
     }
 
-    public Socket getSocket() {
-        return socket;
-    }
-
-    public int getPort() {
-        return socket.getPort();
-    }
-
-    public byte[] getIp() {
-        return socket.getInetAddress().getAddress();
-    }
-
     public HostPort getHostPort() {
-        return new HostPort(getIp(), getPort());
+        return hostPort;
     }
 
-    public void update() {
-        lastUpdate = System.currentTimeMillis();
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Peer peer = (Peer) o;
+        return Objects.equals(hostPort, peer.hostPort);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(hostPort);
     }
 }

@@ -5,14 +5,12 @@ import requests.FileInfo;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class Tracker {
     private ServerSocket serverSocket = null;
+    private final List<Socket> sockets = new ArrayList<>();
     private final TrackerEnvironment environment = new TrackerEnvironment();
     private final int PORT = 8081;
 
@@ -28,11 +26,10 @@ public class Tracker {
                 while (true) {
                     System.out.println("tracker: waiting for client");
                     Socket socket = serverSocket.accept();
-                    Peer peer = new Peer(socket);
-                    synchronized (environment) {
-                        environment.getPeers().add(peer);
+                    synchronized (sockets) {
+                        sockets.add(socket);
                     }
-                    new Thread(new TrackerWorker(peer, environment)).start();
+                    new Thread(new TrackerWorker(socket, environment)).start();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -55,11 +52,6 @@ public class Tracker {
                     while (it.hasNext()) {
                         Peer peer = it.next();
                         if (peer.outdated()) {
-                            try {
-                                peer.getSocket().close();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
                             it.remove();
                             outdated.add(peer);
                         }

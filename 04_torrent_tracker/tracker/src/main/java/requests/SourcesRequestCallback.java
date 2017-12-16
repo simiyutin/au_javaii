@@ -4,6 +4,7 @@ import tracker.Peer;
 import tracker.TrackerEnvironment;
 
 import java.io.IOException;
+import java.net.Socket;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,12 +17,15 @@ public class SourcesRequestCallback implements TrackerRequestCallback {
     }
 
     @Override
-    public void execute(Peer peer, TrackerEnvironment environment) throws IOException {
+    public void execute(Socket socket, TrackerEnvironment environment) throws IOException {
         synchronized (environment) {
             Set<Peer> peers = environment.getPeers(request.getFileId());
-            List<HostPort> sources = peers.stream().map(Peer::getHostPort).collect(Collectors.toList());
+            List<HostPort> sources = peers.stream()
+                    .map(Peer::getHostPort)
+                    .filter(hp -> hp.getPort() > 0)
+                    .collect(Collectors.toList());
             SourcesResponse response = new SourcesResponse(sources);
-            response.dump(peer.getSocket().getOutputStream());
+            response.dump(socket.getOutputStream());
         }
     }
 }

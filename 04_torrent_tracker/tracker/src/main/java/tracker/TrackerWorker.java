@@ -3,26 +3,31 @@ package tracker;
 import requests.TrackerRequestCallback;
 import requests.TrackerRequestCallbackFactory;
 
+import java.io.EOFException;
 import java.io.IOException;
+import java.net.Socket;
+import java.net.SocketException;
 
 public class TrackerWorker implements Runnable {
-    private final Peer peer;
+    private final Socket socket;
     private final TrackerEnvironment environment;
 
-    public TrackerWorker(Peer peer, TrackerEnvironment environment) {
-        this.peer = peer;
+    public TrackerWorker(Socket socket, TrackerEnvironment environment) {
+        this.socket = socket;
         this.environment = environment;
     }
 
     @Override
     public void run() {
         while (true) {
-            if (peer.getSocket().isClosed()) {
-                break;
+            if (socket.isClosed()) {
+                return;
             }
             try {
-                TrackerRequestCallback callback = TrackerRequestCallbackFactory.parseRequest(peer.getSocket().getInputStream());
-                callback.execute(peer, environment);
+                TrackerRequestCallback callback = TrackerRequestCallbackFactory.parseRequest(socket.getInputStream());
+                callback.execute(socket, environment);
+            } catch (EOFException | SocketException e) {
+                return;
             } catch (IOException e) {
                 e.printStackTrace();
             }

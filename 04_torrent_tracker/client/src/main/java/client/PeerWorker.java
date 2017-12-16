@@ -3,13 +3,15 @@ package client;
 import requests.ClientRequestCallback;
 import requests.ClientRequestCallbackFactory;
 
+import java.io.EOFException;
 import java.io.IOException;
+import java.net.SocketException;
 
-public class ClientWorker implements Runnable {
+public class PeerWorker implements Runnable {
     private final Leech leech;
     private final ClientEnvironment environment;
 
-    public ClientWorker(Leech leech, ClientEnvironment environment) {
+    public PeerWorker(Leech leech, ClientEnvironment environment) {
         this.leech = leech;
         this.environment = environment;
     }
@@ -23,6 +25,8 @@ public class ClientWorker implements Runnable {
             try {
                 ClientRequestCallback callback = ClientRequestCallbackFactory.parseRequest(leech.getSocket().getInputStream());
                 callback.execute(leech, environment);
+            } catch (EOFException | SocketException e) {
+                return;
             } catch (IOException e) {
                 e.printStackTrace();
             }

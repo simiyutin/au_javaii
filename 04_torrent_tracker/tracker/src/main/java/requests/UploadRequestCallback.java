@@ -5,6 +5,7 @@ import tracker.TrackerEnvironment;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.Socket;
 
 public class UploadRequestCallback implements TrackerRequestCallback {
     private final UploadRequest request;
@@ -14,11 +15,11 @@ public class UploadRequestCallback implements TrackerRequestCallback {
     }
 
     @Override
-    public void execute(Peer peer, TrackerEnvironment environment) throws IOException {
+    public void execute(Socket socket, TrackerEnvironment environment) throws IOException {
         synchronized (environment) {
-            int fileId = environment.addFile(peer, request.getName(), request.getSize());
+            int fileId = environment.addFile(request.getName(), request.getSize());
             UploadResponse response = new UploadResponse(fileId);
-            response.dump(peer.getSocket().getOutputStream());
+            response.dump(socket.getOutputStream());
         }
     }
 }

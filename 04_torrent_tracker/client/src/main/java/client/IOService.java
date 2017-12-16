@@ -18,7 +18,7 @@ public class IOService {
         byte[] buffer = new byte[partSize];
         int bytesRead;
         int numberOfParts = 0;
-        File dir = new File(String.format("%s/index/%d", basePath, fileId));
+        File dir = new File(String.format("%s/%d", basePath, fileId));
         dir.mkdirs();
         try (FileInputStream fis = new FileInputStream(file)) {
             while ((bytesRead = fis.read(buffer)) != -1) {
@@ -32,19 +32,19 @@ public class IOService {
         return numberOfParts;
     }
 
-    public void gather(int fileId, String name) throws IOException {
-        File targetFile = new File(String.format("%s/downloads/%s", basePath, name));
+    public void gather(int fileId, String name, String targetDir) throws IOException {
+        File targetFile = new File(String.format("%s/%s", targetDir, name));
         targetFile.getParentFile().mkdirs();
         targetFile.createNewFile();
 
-        String dirPath = String.format("%s/index/%d", basePath, fileId);
-        File dir = new File(dirPath);
+        String partsDir = String.format("%s/%d", basePath, fileId);
+        File dir = new File(partsDir);
         if (!dir.exists()) {
-            throw new FileNotFoundException(dirPath);
+            throw new FileNotFoundException(partsDir);
         }
         File[] parts = dir.listFiles();
         if (parts == null) {
-            throw new IOException("error while reading " + dirPath);
+            throw new IOException("error while reading " + partsDir);
         }
         Arrays.sort(parts, Comparator.comparing(f -> Integer.valueOf(f.getName())));
         try(FileOutputStream targetStream = new FileOutputStream(targetFile)) {
@@ -61,7 +61,7 @@ public class IOService {
     }
 
     public List<Integer> getAvailableFileParts(int fileId) {
-        File dir = new File(String.format("%s/index/%d", basePath, fileId));
+        File dir = new File(String.format("%s/%d", basePath, fileId));
         File[] files = dir.listFiles();
         if (files == null) {
             return new ArrayList<>();
@@ -73,14 +73,17 @@ public class IOService {
     }
 
     public void dumpFilePart(int fileId, int partId, OutputStream os) throws IOException {
-        File partFile = new File(String.format("%s/index/%d/%d", basePath, fileId, partId));
+        File partFile = new File(String.format("%s/%d/%d", basePath, fileId, partId));
         int size = Math.toIntExact(partFile.length());
         try (
                 FileInputStream fis = new FileInputStream(partFile);
                 DataOutputStream dos = new DataOutputStream(os)
         ) {
             dos.writeInt(size);
-            move(fis, os);
+            byte[] buffer = new byte[size];
+            fis.read(buffer);
+            os.write(buffer);
+//            move(fis, os);
         }
     }
 

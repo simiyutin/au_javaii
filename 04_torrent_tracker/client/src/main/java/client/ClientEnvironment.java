@@ -11,7 +11,11 @@ import java.util.stream.Collectors;
 public class ClientEnvironment {
     private final Set<FileInfo> seedingFiles = new HashSet<>();
     private final List<Leech> leeches = new ArrayList<>();
-    private final IOService ioService = new IOService("resources/");
+    private final IOService ioService;
+
+    public ClientEnvironment(String indexPath) {
+        this.ioService = new IOService(indexPath);
+    }
 
     public Set<FileInfo> getSeedingFiles() {
         return seedingFiles;
