@@ -24,7 +24,6 @@ public class TrackerWorker implements Runnable {
                 return;
             }
             try {
-                System.out.println("azazaz");
                 TrackerRequestCallback callback = TrackerRequestCallbackFactory.parseRequest(socket.getInputStream());
                 callback.execute(socket, environment);
             } catch (EOFException | SocketException e) {

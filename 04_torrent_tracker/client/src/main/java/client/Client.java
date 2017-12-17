@@ -133,9 +133,7 @@ public class Client {
         new Thread(() -> {
             try {
                 while (true) {
-                    System.out.println(String.format("%d peer server waiting for leach", Thread.currentThread().getId()));
                     Socket socket = serverSocket.accept();
-                    System.out.println(String.format("%d peer server got leach", Thread.currentThread().getId()));
                     Leech leech = new Leech(socket);
                     synchronized (environment) {
                         environment.getLeeches().add(leech);
@@ -144,7 +142,7 @@ public class Client {
                 }
             }
             catch (IOException e) {
-                System.out.println("peer server ended");
+                System.out.println("peer server stopped");
             }
         }).start();
     }

@@ -26,7 +26,6 @@ public class Tracker {
         new Thread(() -> {
             try {
                 while (true) {
-                    System.out.println("tracker: waiting for client");
                     Socket socket = serverSocket.accept();
                     synchronized (sockets) {
                         sockets.add(socket);
