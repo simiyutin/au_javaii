@@ -1,5 +1,7 @@
 package requests;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.*;
 
 public class UpdateResponse {
@@ -13,13 +15,14 @@ public class UpdateResponse {
         return status;
     }
 
-    public static UpdateResponse parse(InputStream is) throws IOException {
+    @NotNull
+    public static UpdateResponse parse(@NotNull InputStream is) throws IOException {
         DataInputStream dis = new DataInputStream(is);
         boolean status = dis.readBoolean();
         return new UpdateResponse(status);
     }
 
-    public void dump(OutputStream os) throws IOException {
+    public void dump(@NotNull OutputStream os) throws IOException {
         DataOutputStream dos = new DataOutputStream(os);
         dos.writeBoolean(getStatus());
     }

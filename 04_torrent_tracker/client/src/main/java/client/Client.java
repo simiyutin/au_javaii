@@ -1,5 +1,6 @@
 package client;
 
+import org.jetbrains.annotations.NotNull;
 import requests.*;
 
 import java.io.File;
@@ -10,14 +11,17 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class Client {
+    @NotNull
     private final TrackerHandle trackerHandle;
+    @NotNull
     private final ServerSocket serverSocket;
+    @NotNull
     private final PeerEnvironment environment;
     private final int TRACKER_PORT = 8081;
     private final int UPDATE_INTERVAL_MINUTES = 4;
     private final int PART_SIZE = 1024;
 
-    public Client(int clientPort, String trackerHost, String indexPath) throws IOException {
+    public Client(int clientPort, @NotNull String trackerHost, @NotNull String indexPath) throws IOException {
         this.trackerHandle = new TrackerHandle(trackerHost, TRACKER_PORT);
         this.serverSocket = new ServerSocket(clientPort);
         this.environment = new PeerEnvironment(indexPath);
@@ -33,7 +37,7 @@ public class Client {
         }
     }
 
-    public void uploadFile(String path) throws IOException {
+    public void uploadFile(@NotNull String path) throws IOException {
         File file = new File(path);
         if (!file.exists()) {
             return;
@@ -58,6 +62,7 @@ public class Client {
         }
     }
 
+    @NotNull
     public Set<FileInfo> listTracker() throws IOException {
         Socket trackerSocket = trackerHandle.getNewSocket();
         ListRequest request = new ListRequest();
@@ -66,6 +71,7 @@ public class Client {
         return response.getFiles();
     }
 
+    @NotNull
     public List<HostPort> executeSources(int fileId) throws IOException {
         Socket trackerSocket = trackerHandle.getNewSocket();
         SourcesRequest request = new SourcesRequest(fileId);
@@ -74,7 +80,7 @@ public class Client {
         return response.getSources();
     }
 
-    public void downloadFile(FileInfo fileInfo, String targetDir) throws IOException {
+    public void downloadFile(@NotNull FileInfo fileInfo, @NotNull String targetDir) throws IOException {
         final DownloadEnvironment downloadEnvironment =
                 new DownloadEnvironment(trackerHandle, environment.getIoService().getIndexPath(), fileInfo);
 
@@ -89,7 +95,7 @@ public class Client {
         environment.getIoService().gather(fileInfo.getFileId(), fileInfo.getName(), targetDir);
     }
 
-    private void downloadFileParts(FileInfo fileInfo, DownloadEnvironment downloadEnvironment) {
+    private void downloadFileParts(@NotNull FileInfo fileInfo, @NotNull DownloadEnvironment downloadEnvironment) {
         final int numberOfParts = IOService.getNumberOfParts(fileInfo.getSize(), PART_SIZE);
         final List<Thread> downloaders = new ArrayList<>();
         for (int i = 0; i < numberOfParts; i++) {

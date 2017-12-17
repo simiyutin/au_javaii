@@ -1,11 +1,13 @@
 package requests;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 public class TrackerRequestCallbackFactory {
-    public static TrackerRequestCallback parseRequest(InputStream is) throws IOException {
+    public static TrackerRequestCallback parseRequest(@NotNull InputStream is) throws IOException {
         DataInputStream dis = new DataInputStream(is);
         RequestType type = RequestType.valueOf(dis.readInt());
         switch (type) {

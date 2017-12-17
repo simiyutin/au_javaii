@@ -1,5 +1,6 @@
 package tracker;
 
+import org.jetbrains.annotations.NotNull;
 import requests.HostPort;
 
 import java.net.Socket;
@@ -7,10 +8,11 @@ import java.util.Objects;
 
 public class Peer {
     private volatile long lastUpdate;
+    @NotNull
     private final HostPort hostPort;
     public static final long MAX_LIFE_MINS = 5;
 
-    public Peer(HostPort hostPort) {
+    public Peer(@NotNull HostPort hostPort) {
         this.hostPort = hostPort;
         this.lastUpdate = System.currentTimeMillis();
     }
@@ -21,6 +23,7 @@ public class Peer {
         return diff > maxdiff;
     }
 
+    @NotNull
     public HostPort getHostPort() {
         return hostPort;
     }

@@ -1,5 +1,6 @@
 package client;
 
+import org.jetbrains.annotations.NotNull;
 import requests.FileInfo;
 
 import java.io.*;
@@ -10,33 +11,41 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class PeerEnvironment {
+    @NotNull
     private final Set<FileInfo> seedingFiles;
-    private final List<Leech> leeches = new ArrayList<>();
+    @NotNull
+    private final List<Leech> leeches;
+    @NotNull
     private final IOService ioService;
 
-    public PeerEnvironment(String indexPath) {
+    public PeerEnvironment(@NotNull String indexPath) {
         this.ioService = new IOService(indexPath);
-//        this.seedingFiles = new HashSet<>();
         this.seedingFiles = restoreSeedingFiles(indexPath);
+        this.leeches = new ArrayList<>();
     }
 
+    @NotNull
     public Set<FileInfo> getSeedingFiles() {
         return seedingFiles;
     }
 
+    @NotNull
     public List<Integer> getSeedingFileIds() {
         return seedingFiles.stream().map(FileInfo::getFileId).collect(Collectors.toList());
     }
 
+    @NotNull
     public List<Leech> getLeeches() {
         return leeches;
     }
 
+    @NotNull
     public IOService getIoService() {
         return ioService;
     }
 
-    private Set<FileInfo> restoreSeedingFiles(String indexPath) {
+    @NotNull
+    private Set<FileInfo> restoreSeedingFiles(@NotNull String indexPath) {
         Set<FileInfo> result = new HashSet<>();
         File indexDir = new File(indexPath);
         if (!indexDir.exists()) {

@@ -1,5 +1,6 @@
 package tracker;
 
+import org.jetbrains.annotations.NotNull;
 import requests.FileInfo;
 
 import java.io.IOException;
@@ -9,12 +10,15 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class Tracker {
+    @NotNull
     private final ServerSocket serverSocket;
+    @NotNull
     private final List<Socket> sockets;
+    @NotNull
     private final TrackerEnvironment environment;
     private final int PORT = 8081;
 
-    public Tracker(String trackerIndexPath) throws IOException {
+    public Tracker(@NotNull String trackerIndexPath) throws IOException {
         this.environment = new TrackerEnvironment(trackerIndexPath);
         this.serverSocket = new ServerSocket(PORT);
         this.sockets = new ArrayList<>();

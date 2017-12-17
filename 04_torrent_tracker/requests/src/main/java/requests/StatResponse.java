@@ -1,13 +1,16 @@
 package requests;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class StatResponse {
+    @NotNull
     private final List<Integer> parts;
 
-    public StatResponse(List<Integer> parts) {
+    public StatResponse(@NotNull List<Integer> parts) {
         this.parts = parts;
     }
 
@@ -15,11 +18,13 @@ public class StatResponse {
         return parts.size();
     }
 
+    @NotNull
     public List<Integer> getParts() {
         return parts;
     }
 
-    public static StatResponse parse(InputStream is) throws IOException {
+    @NotNull
+    public static StatResponse parse(@NotNull InputStream is) throws IOException {
         DataInputStream dis = new DataInputStream(is);
         int count = dis.readInt();
         List<Integer> parts = new ArrayList<>();
@@ -30,7 +35,8 @@ public class StatResponse {
         return new StatResponse(parts);
     }
 
-    public void dump(OutputStream os) throws IOException {
+    @NotNull
+    public void dump(@NotNull OutputStream os) throws IOException {
         DataOutputStream dos = new DataOutputStream(os);
         dos.writeInt(getCount());
         for (Integer part : getParts()) {

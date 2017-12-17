@@ -1,5 +1,6 @@
 package client;
 
+import org.jetbrains.annotations.NotNull;
 import requests.GetRequest;
 import requests.HostPort;
 
@@ -13,9 +14,10 @@ import java.util.Set;
 
 public class DownloadTask implements Runnable {
     private final int partId;
+    @NotNull
     private final DownloadEnvironment environment;
 
-    public DownloadTask(DownloadEnvironment environment, int partId) {
+    public DownloadTask(@NotNull DownloadEnvironment environment, int partId) {
         this.environment = environment;
         this.partId = partId;
     }
@@ -46,7 +48,7 @@ public class DownloadTask implements Runnable {
         }
     }
 
-    private void downloadPart(Socket socket, int fileId, int partId) throws IOException {
+    private void downloadPart(@NotNull Socket socket, int fileId, int partId) throws IOException {
         GetRequest request = new GetRequest(fileId, partId);
         request.dump(socket.getOutputStream());
         DataInputStream dis = new DataInputStream(socket.getInputStream());

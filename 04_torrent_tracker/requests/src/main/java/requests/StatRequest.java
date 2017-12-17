@@ -1,5 +1,7 @@
 package requests;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.*;
 
 import static requests.RequestType.STAT;
@@ -20,13 +22,14 @@ public class StatRequest {
         return fileId;
     }
 
-    public static StatRequest parse(InputStream is) throws IOException {
+    @NotNull
+    public static StatRequest parse(@NotNull InputStream is) throws IOException {
         DataInputStream dis = new DataInputStream(is);
         int id = dis.readInt();
         return new StatRequest(id);
     }
 
-    public void dump(OutputStream os) throws IOException {
+    public void dump(@NotNull OutputStream os) throws IOException {
         DataOutputStream dos = new DataOutputStream(os);
         dos.writeInt(getType().getValue());
         dos.writeInt(getFileId());

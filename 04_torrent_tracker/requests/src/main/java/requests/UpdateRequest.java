@@ -1,5 +1,7 @@
 package requests;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,9 +11,10 @@ import static requests.RequestType.UPDATE;
 public class UpdateRequest {
     private final RequestType type = UPDATE;
     private final int clientPort;
+    @NotNull
     private final List<Integer> fileIds;
 
-    public UpdateRequest(int clientPort, List<Integer> fileIds) {
+    public UpdateRequest(int clientPort, @NotNull List<Integer> fileIds) {
         this.clientPort = clientPort;
         this.fileIds = fileIds;
     }
@@ -28,11 +31,13 @@ public class UpdateRequest {
         return fileIds.size();
     }
 
+    @NotNull
     public List<Integer> getFileIds() {
         return fileIds;
     }
 
-    public static UpdateRequest parse(InputStream is) throws IOException {
+    @NotNull
+    public static UpdateRequest parse(@NotNull InputStream is) throws IOException {
         DataInputStream dis = new DataInputStream(is);
         int clientPort = dis.readInt();
         int count = dis.readInt();
@@ -44,7 +49,7 @@ public class UpdateRequest {
         return new UpdateRequest(clientPort, fileIds);
     }
 
-    public void dump(OutputStream os) throws IOException {
+    public void dump(@NotNull OutputStream os) throws IOException {
         DataOutputStream dos = new DataOutputStream(os);
         dos.writeInt(getType().getValue());
         dos.writeInt(getClientPort());

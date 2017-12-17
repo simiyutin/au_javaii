@@ -1,5 +1,7 @@
 package requests;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.*;
 
 import static requests.RequestType.SOURCES;
@@ -20,13 +22,13 @@ public class SourcesRequest {
         return fileId;
     }
 
-    public static SourcesRequest parse(InputStream is) throws IOException {
+    public static SourcesRequest parse(@NotNull InputStream is) throws IOException {
         DataInputStream dis = new DataInputStream(is);
         int fileId = dis.readInt();
         return new SourcesRequest(fileId);
     }
 
-    public void dump(OutputStream os) throws IOException {
+    public void dump(@NotNull OutputStream os) throws IOException {
         DataOutputStream dos = new DataOutputStream(os);
         dos.writeInt(getType().getValue());
         dos.writeInt(getFileId());

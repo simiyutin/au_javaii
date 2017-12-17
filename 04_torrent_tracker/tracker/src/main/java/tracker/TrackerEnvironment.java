@@ -1,5 +1,6 @@
 package tracker;
 
+import org.jetbrains.annotations.NotNull;
 import requests.FileInfo;
 
 import java.io.*;
@@ -7,20 +8,25 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TrackerEnvironment {
+    @NotNull
     private final Set<Peer> peers = ConcurrentHashMap.newKeySet();
+    @NotNull
     private final Map<FileInfo, Set<Peer>> index;
+    @NotNull
     private final String trackerIndexPath;
 
-    public TrackerEnvironment(String trackerIndexPath) {
+    public TrackerEnvironment(@NotNull String trackerIndexPath) {
         new File(trackerIndexPath).mkdirs();
         this.trackerIndexPath = trackerIndexPath;
         this.index = loadCatalog();
     }
 
+    @NotNull
     public String getTrackerIndexPath() {
         return trackerIndexPath;
     }
 
+    @NotNull
     public Set<Peer> getPeers() {
         return peers;
     }
@@ -37,22 +43,24 @@ public class TrackerEnvironment {
         filePeers.add(peer);
     }
 
-    public void updatePeer(Peer peer) {
+    public void updatePeer(@NotNull Peer peer) {
         peers.remove(peer);
         peers.add(peer);
     }
 
+    @NotNull
     public Set<Peer> getPeers(int fileId) {
         FileInfo info = new FileInfo(fileId);
         Set<Peer> peers = index.get(info);
         return peers == null ? new HashSet<>() : peers;
     }
 
+    @NotNull
     public Map<FileInfo, Set<Peer>> getIndex() {
         return index;
     }
 
-    public synchronized int addFile(String name, long size) {
+    public synchronized int addFile(@NotNull String name, long size) {
         int id = index.keySet().size();
         FileInfo info = new FileInfo(id, name, size);
         dumpInfo(info);
@@ -60,7 +68,7 @@ public class TrackerEnvironment {
         return id;
     }
 
-    private void dumpInfo(FileInfo info) {
+    private void dumpInfo(@NotNull FileInfo info) {
         try {
             FileOutputStream fos = new FileOutputStream(String.format("%s/%d", getTrackerIndexPath(), info.getFileId()));
             info.dump(fos);
@@ -69,6 +77,7 @@ public class TrackerEnvironment {
         }
     }
 
+    @NotNull
     private Map<FileInfo, Set<Peer>> loadCatalog() {
         Set<FileInfo> infos = loadInfos();
         Map<FileInfo, Set<Peer>> result = new ConcurrentHashMap<>();
@@ -78,6 +87,7 @@ public class TrackerEnvironment {
         return result;
     }
 
+    @NotNull
     private Set<FileInfo> loadInfos() {
         Set<FileInfo> result = new HashSet<>();
 

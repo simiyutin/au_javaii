@@ -1,5 +1,6 @@
 package tracker;
 
+import org.jetbrains.annotations.NotNull;
 import requests.TrackerRequestCallback;
 import requests.TrackerRequestCallbackFactory;
 
@@ -9,10 +10,12 @@ import java.net.Socket;
 import java.net.SocketException;
 
 public class TrackerWorker implements Runnable {
+    @NotNull
     private final Socket socket;
+    @NotNull
     private final TrackerEnvironment environment;
 
-    public TrackerWorker(Socket socket, TrackerEnvironment environment) {
+    public TrackerWorker(@NotNull Socket socket, @NotNull TrackerEnvironment environment) {
         this.socket = socket;
         this.environment = environment;
     }

@@ -1,5 +1,7 @@
 package requests;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.*;
 
 public class UploadResponse {
@@ -13,13 +15,14 @@ public class UploadResponse {
         return id;
     }
 
-    public static UploadResponse parse(InputStream is) throws IOException {
+    @NotNull
+    public static UploadResponse parse(@NotNull InputStream is) throws IOException {
         DataInputStream dis = new DataInputStream(is);
         int id = dis.readInt();
         return new UploadResponse(id);
     }
 
-    public void dump(OutputStream os) throws IOException {
+    public void dump(@NotNull OutputStream os) throws IOException {
         DataOutputStream dos = new DataOutputStream(os);
         dos.writeInt(getId());
     }

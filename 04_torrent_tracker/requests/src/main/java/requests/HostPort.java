@@ -1,5 +1,7 @@
 package requests;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -18,6 +20,7 @@ public class HostPort {
         return ip;
     }
 
+    @NotNull
     public InetAddress getInetAddress() throws UnknownHostException {
         return InetAddress.getByAddress(ip);
     }

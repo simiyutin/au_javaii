@@ -1,13 +1,16 @@
 package requests;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SourcesResponse {
+    @NotNull
     private final List<HostPort> sources;
 
-    public SourcesResponse(List<HostPort> sources) {
+    public SourcesResponse(@NotNull List<HostPort> sources) {
         this.sources = sources;
     }
 
@@ -15,11 +18,13 @@ public class SourcesResponse {
         return sources.size();
     }
 
+    @NotNull
     public List<HostPort> getSources() {
         return sources;
     }
 
-    public static SourcesResponse parse(InputStream is) throws IOException {
+    @NotNull
+    public static SourcesResponse parse(@NotNull InputStream is) throws IOException {
         DataInputStream dis = new DataInputStream(is);
         int size = dis.readInt();
         List<HostPort> sources = new ArrayList<>();
@@ -32,7 +37,7 @@ public class SourcesResponse {
         return new SourcesResponse(sources);
     }
 
-    public void dump(OutputStream os) throws IOException {
+    public void dump(@NotNull OutputStream os) throws IOException {
         DataOutputStream dos = new DataOutputStream(os);
         dos.writeInt(getSize());
         for (HostPort hp : getSources()) {

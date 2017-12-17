@@ -1,5 +1,7 @@
 package client;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import requests.*;
 
 import java.io.IOException;
@@ -11,17 +13,22 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class DownloadEnvironment {
+    @NotNull
     private Map<Integer, Set<HostPort>> seeds;
+    @Nullable
     private Thread updaterThread;
+    @NotNull
     private final String indexPath;
+    @NotNull
     private final FileInfo fileInfo;
+    @NotNull
     private final TrackerHandle trackerHandle;
 
     public FileInfo getFileInfo() {
         return fileInfo;
     }
 
-    public DownloadEnvironment(TrackerHandle trackerHandle, String indexPath, FileInfo fileInfo) throws IOException {
+    public DownloadEnvironment(@NotNull TrackerHandle trackerHandle, @NotNull String indexPath, @NotNull FileInfo fileInfo) throws IOException {
         this.trackerHandle = trackerHandle;
         this.indexPath = indexPath;
         this.fileInfo = fileInfo;
@@ -29,14 +36,17 @@ public class DownloadEnvironment {
         this.updaterThread = null;
     }
 
+    @NotNull
     public synchronized Map<Integer, Set<HostPort>> getSeeds() {
         return seeds;
     }
 
+    @Nullable
     public synchronized Set<HostPort> getSeeds(int partId) {
         return seeds.get(partId);
     }
 
+    @NotNull
     public String getIndexPath() {
         return indexPath;
     }
@@ -69,6 +79,7 @@ public class DownloadEnvironment {
         }
     }
 
+    @NotNull
     private Map<Integer, Set<HostPort>> getSeedsFromTracker() throws IOException {
         Socket trackerSocket = trackerHandle.getNewSocket();
         SourcesRequest request = new SourcesRequest(fileInfo.getFileId());
