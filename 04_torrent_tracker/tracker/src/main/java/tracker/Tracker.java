@@ -33,7 +33,7 @@ public class Tracker {
                     new Thread(new TrackerWorker(socket, environment)).start();
                 }
             } catch (IOException e) {
-
+                //connection closed
             }
 
         }).start();
@@ -74,11 +74,11 @@ public class Tracker {
                     e.printStackTrace();
                 }
             }
-        }
-        try {
-            serverSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

@@ -19,15 +19,13 @@ public class SourcesRequestCallback implements TrackerRequestCallback {
 
     @Override
     public void execute(Socket socket, TrackerEnvironment environment) throws IOException {
-        synchronized (environment) {
-            Set<Peer> peers = environment.getPeers(request.getFileId());
-            List<HostPort> sources = peers.stream()
-                        .map(Peer::getHostPort)
-                        .filter(hp -> hp.getPort() > 0)
-                        .collect(Collectors.toList());
+        Set<Peer> peers = environment.getPeers(request.getFileId());
+        List<HostPort> sources = peers.stream()
+                .map(Peer::getHostPort)
+                .filter(hp -> hp.getPort() > 0)
+                .collect(Collectors.toList());
 
-            SourcesResponse response = new SourcesResponse(sources);
-            response.dump(socket.getOutputStream());
-        }
+        SourcesResponse response = new SourcesResponse(sources);
+        response.dump(socket.getOutputStream());
     }
 }

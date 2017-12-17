@@ -4,16 +4,16 @@ import requests.FileInfo;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class TrackerEnvironment {
-    private final Set<Peer> peers = new HashSet<>();
+    private final Set<Peer> peers = ConcurrentHashMap.newKeySet();
     private final Map<FileInfo, Set<Peer>> index;
     private final String trackerIndexPath;
 
     public TrackerEnvironment(String trackerIndexPath) {
         new File(trackerIndexPath).mkdirs();
         this.trackerIndexPath = trackerIndexPath;
-//        this.index = new HashMap<>();
         this.index = loadCatalog();
     }
 
@@ -25,7 +25,7 @@ public class TrackerEnvironment {
         return peers;
     }
 
-    public void updatePeerForFile(Peer peer, int fileId) {
+    public synchronized void updatePeerForFile(Peer peer, int fileId) {
         FileInfo fakeInfo = new FileInfo(fileId);
         Set<Peer> filePeers = index.get(fakeInfo);
         if (filePeers == null) {
@@ -52,7 +52,7 @@ public class TrackerEnvironment {
         return index;
     }
 
-    public int addFile(String name, long size) {
+    public synchronized int addFile(String name, long size) {
         int id = index.keySet().size();
         FileInfo info = new FileInfo(id, name, size);
         dumpInfo(info);
@@ -71,7 +71,7 @@ public class TrackerEnvironment {
 
     private Map<FileInfo, Set<Peer>> loadCatalog() {
         Set<FileInfo> infos = loadInfos();
-        Map<FileInfo, Set<Peer>> result = new HashMap<>();
+        Map<FileInfo, Set<Peer>> result = new ConcurrentHashMap<>();
 
         infos.forEach(info -> result.put(info, new HashSet<>()));
 

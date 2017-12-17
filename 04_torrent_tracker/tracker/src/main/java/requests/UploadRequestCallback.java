@@ -16,10 +16,8 @@ public class UploadRequestCallback implements TrackerRequestCallback {
 
     @Override
     public void execute(Socket socket, TrackerEnvironment environment) throws IOException {
-        synchronized (environment) {
-            int fileId = environment.addFile(request.getName(), request.getSize());
-            UploadResponse response = new UploadResponse(fileId);
-            response.dump(socket.getOutputStream());
-        }
+        int fileId = environment.addFile(request.getName(), request.getSize());
+        UploadResponse response = new UploadResponse(fileId);
+        response.dump(socket.getOutputStream());
     }
 }
