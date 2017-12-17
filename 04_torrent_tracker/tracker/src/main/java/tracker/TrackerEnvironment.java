@@ -29,6 +29,7 @@ public class TrackerEnvironment {
         FileInfo fakeInfo = new FileInfo(fileId);
         Set<Peer> filePeers = index.get(fakeInfo);
         if (filePeers == null) {
+            System.out.println("peer tried to update unknown file!");
             return;
         }
 

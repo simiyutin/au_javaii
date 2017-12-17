@@ -19,12 +19,14 @@ public class MainTest {
     private final String basePath = "src/test/resources/";
     private final String indexPathFst = basePath + "/index_fst/";
     private final String indexPathSnd = basePath + "/index_snd/";
+    private final String indexPathThd = basePath + "/index_thd/";
     private final String downloadsPath = basePath + "/downloads/";
     private final String trackerIndexPath = basePath + "/tracker_index/";
 
     private void clearFolders() {
         rmrf(indexPathFst);
         rmrf(indexPathSnd);
+        rmrf(indexPathThd);
         rmrf(downloadsPath);
         rmrf(trackerIndexPath);
     }
@@ -44,8 +46,7 @@ public class MainTest {
 
         Tracker tracker = new Tracker();
         tracker.start(trackerIndexPath);
-        Client client = new Client();
-        client.start(11111, "localhost", indexPathFst);
+        Client client = new Client(11111, "localhost", indexPathFst);
 
         File file = new File(basePath + "test.txt");
         client.uploadFile(file.getPath());
@@ -65,8 +66,7 @@ public class MainTest {
 
         Tracker tracker = new Tracker();
         tracker.start(trackerIndexPath);
-        Client client = new Client();
-        client.start(11111, "localhost", indexPathFst);
+        Client client = new Client(11111, "localhost", indexPathFst);
 
         File file = new File(basePath + "test.txt");
         client.uploadFile(file.getPath());
@@ -105,14 +105,13 @@ public class MainTest {
 
         Tracker tracker = new Tracker();
         tracker.start(trackerIndexPath);
-        Client client = new Client();
-        client.start(11111, "localhost", indexPathFst);
+        Client client = new Client(11111, "localhost", indexPathFst);
+
 
         client.uploadFile(basePath + fileName);
         client.updateTracker();
 
-        Client client2 = new Client();
-        client2.start(11112, "localhost", indexPathSnd);
+        Client client2 = new Client(11112, "localhost", indexPathSnd);
 
         Set<FileInfo> infoList = client2.listTracker();
         assertTrue(infoList.size() == 1);
@@ -138,8 +137,7 @@ public class MainTest {
         Tracker tracker = new Tracker();
         tracker.start(trackerIndexPath);
 
-        Client client2 = new Client();
-        client2.start(11112, "localhost", indexPathSnd);
+        Client client2 = new Client(11112, "localhost", indexPathSnd);
 
         Set<FileInfo> infoList = client2.listTracker();
         assertTrue(infoList.size() == 0);
@@ -162,8 +160,7 @@ public class MainTest {
 
         Tracker tracker = new Tracker();
         tracker.start(trackerIndexPath);
-        Client client = new Client();
-        client.start(11111, "localhost", indexPathFst);
+        Client client = new Client(11111, "localhost", indexPathFst);
 
         client.uploadFile(basePath + fileName);
         client.updateTracker();
@@ -180,8 +177,7 @@ public class MainTest {
 
         Tracker tracker = new Tracker();
         tracker.start(trackerIndexPath);
-        Client client = new Client();
-        client.start(11111, "localhost", indexPathFst);
+        Client client = new Client(11111, "localhost", indexPathFst);
 
         client.uploadFile(basePath + fileName);
         client.updateTracker();
@@ -192,12 +188,10 @@ public class MainTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        client = new Client();
-        client.start(11113, "localhost", indexPathFst);
+        client = new Client(11113, "localhost", indexPathFst);
         client.updateTracker();
 
-        Client client2 = new Client();
-        client2.start(11112, "localhost", indexPathSnd);
+        Client client2 = new Client(11112, "localhost", indexPathSnd);
 
         Set<FileInfo> infoList = client2.listTracker();
         assertTrue(infoList.size() == 1);
@@ -222,8 +216,7 @@ public class MainTest {
         String fileName = "kitty.jpg";
         Tracker tracker = new Tracker();
         tracker.start(trackerIndexPath);
-        Client client = new Client();
-        client.start(11111, "localhost", indexPathFst);
+        Client client = new Client(11111, "localhost", indexPathFst);
 
         client.uploadFile(basePath + fileName);
 
@@ -233,8 +226,7 @@ public class MainTest {
 
         client.updateTracker();
 
-        Client client2 = new Client();
-        client2.start(11112, "localhost", indexPathSnd);
+        Client client2 = new Client(11112, "localhost", indexPathSnd);
 
         Set<FileInfo> infoList = client2.listTracker();
         assertTrue(infoList.size() == 1);
@@ -263,6 +255,39 @@ public class MainTest {
         client.stop();
     }
 
+    @Test
+    // используется подгрузка состояний трекера и клиентов между перезапусками
+    public void testMultipleSeeds() throws IOException {
+        prepareTest();
+
+        Tracker tracker = new Tracker();
+        tracker.start(basePath + "/tracker_index_partial/");
+
+        int fstPort = 11111;
+        int sndPort = 11112;
+        int thdPort = 11113;
+
+        Client client1 = initClient(fstPort, basePath + "/index_fst_partial/");
+        Client client2 = initClient(sndPort, basePath + "/index_snd_partial/");
+        Client client3 = initClient(thdPort, indexPathThd);
+
+        client1.updateTracker();
+        client2.updateTracker();
+        client3.updateTracker();
+
+        String fileName = "kitty.jpg";
+        File expected = new File(basePath + fileName);
+        FileInfo fileInfo = new FileInfo(0, fileName, expected.length());
+        client3.downloadFile(fileInfo, downloadsPath);
+
+        File actual = new File(downloadsPath + fileName);
+        assertBinaryEquals(expected, actual);
+        tracker.stop();
+        client1.stop();
+        client2.stop();
+        client3.stop();
+    }
+
     public Tracker initTracker() throws IOException {
         Tracker tracker = new Tracker();
         tracker.start(trackerIndexPath);
@@ -270,8 +295,7 @@ public class MainTest {
     }
 
     public Client initClient(int port, String indexPath) throws IOException {
-        Client client = new Client();
-        client.start(port, "localhost", indexPath);
+        Client client = new Client(port, "localhost", indexPath);
         return client;
     }
 
