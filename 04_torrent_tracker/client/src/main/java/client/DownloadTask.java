@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Iterator;
+import java.util.Set;
 
 public class DownloadTask implements Runnable {
     private final int partId;
@@ -21,21 +23,25 @@ public class DownloadTask implements Runnable {
     @Override
     public void run() {
         while (true) {
-            // todo synchronization
-            // todo wait until new seeds
-            if (!environment.getSeeds().containsKey(partId)) {
-                continue;
+            Set<HostPort> seeds = environment.getSeeds(partId);
+            if (seeds != null) {
+                Iterator<HostPort> it = seeds.iterator();
+                while (it.hasNext()) {
+                    try {
+                        HostPort hostPort = it.next();
+                        Socket socket = new Socket(hostPort.getInetAddress(), hostPort.getPort());
+                        downloadPart(socket, environment.getFileInfo().getFileId(), partId);
+                        return;
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                    it.remove();
+                }
             }
-            if (environment.getSeeds().get(partId).size() == 0) {
-                continue;
-            }
-            try {
-                HostPort hostPort = environment.getSeeds().get(partId).iterator().next();
-                Socket socket = new Socket(hostPort.getInetAddress(), hostPort.getPort());
-                downloadPart(socket, environment.getFileInfo().getFileId(), partId);
-                return;
-            } catch (IOException e) {
-                e.printStackTrace();
+            synchronized (environment) {
+                try {
+                    environment.wait();
+                } catch (InterruptedException ignored) {}
             }
         }
     }

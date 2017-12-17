@@ -33,6 +33,10 @@ public class DownloadEnvironment {
         return seeds;
     }
 
+    public synchronized Set<HostPort> getSeeds(int partId) {
+        return seeds.get(partId);
+    }
+
     public String getIndexPath() {
         return indexPath;
     }
@@ -46,7 +50,11 @@ public class DownloadEnvironment {
                     return;
                 }
                 try {
-                    seeds = getSeedsFromTracker();
+                    Map<Integer, Set<HostPort>> newSeeds = getSeedsFromTracker();
+                    synchronized (this) {
+                        seeds = newSeeds;
+                        this.notify();
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
