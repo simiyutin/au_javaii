@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import static junit.framework.TestCase.assertTrue;
 
-public class SimpleTest {
+public class TrackerTest {
     private final String basePath = "src/test/resources/";
     private final String trackerIndexPath = basePath + "/tracker_index/";
 

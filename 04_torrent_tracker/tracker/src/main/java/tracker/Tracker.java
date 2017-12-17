@@ -66,11 +66,13 @@ public class Tracker {
     }
 
     public void stop() {
-        for (Socket socket : sockets) {
-            try {
-                socket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+        synchronized (sockets) {
+            for (Socket socket : sockets) {
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
         try {

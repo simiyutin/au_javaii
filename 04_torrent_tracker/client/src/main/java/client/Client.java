@@ -25,7 +25,7 @@ public class Client {
         environment = new PeerEnvironment(indexPath);
         serverSocket = new ServerSocket(clientPort);
         trackerSocket = new Socket(trackerHost, TRACKER_PORT);
-//        startDaemonThread(clientPort);
+        startDaemonThread(clientPort);
         startPeerServerThread();
     }
 
@@ -158,15 +158,23 @@ public class Client {
 
     private void startDaemonThread(int clientPort) {
         new Thread(() -> {
-            try {
-                updateTracker();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                TimeUnit.MINUTES.sleep(UPDATE_INTERVAL_MINUTES);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            while (true) {
+                try {
+                    Socket localTrackerSocket = new Socket(trackerSocket.getInetAddress(), TRACKER_PORT);
+                    UpdateRequest updateRequest = new UpdateRequest(clientPort, environment.getSeedingFileIds());
+                    updateRequest.dump(localTrackerSocket.getOutputStream());
+                    UpdateResponse updateResponse = UpdateResponse.parse(localTrackerSocket.getInputStream());
+                    if (!updateResponse.getStatus()) {
+                        System.out.println("bad update status!");
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    TimeUnit.MINUTES.sleep(UPDATE_INTERVAL_MINUTES);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }).start();
     }

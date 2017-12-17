@@ -13,9 +13,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
+import static junit.framework.TestCase.*;
 
 public class MainTest {
     private final String basePath = "src/test/resources/";
@@ -251,6 +249,30 @@ public class MainTest {
         tracker.stop();
         client.stop();
         client2.stop();
+    }
+
+    @Test
+    public void testDoubleUpdate() throws IOException {
+        Tracker tracker = initTracker();
+        Client client = initClient(11111, indexPathFst);
+
+        client.updateTracker();
+        client.updateTracker();
+
+        tracker.stop();
+        client.stop();
+    }
+
+    public Tracker initTracker() throws IOException {
+        Tracker tracker = new Tracker();
+        tracker.start(trackerIndexPath);
+        return tracker;
+    }
+
+    public Client initClient(int port, String indexPath) throws IOException {
+        Client client = new Client();
+        client.start(port, "localhost", indexPath);
+        return client;
     }
 
     public static void assertBinaryEquals(File expected, File actual) {
