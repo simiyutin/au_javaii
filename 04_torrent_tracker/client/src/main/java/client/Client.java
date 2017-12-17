@@ -25,13 +25,6 @@ public class Client {
         startPeerServerThread();
     }
 
-    Client(int clientPort, String indexPath) throws IOException {
-        this.trackerHandle = new TrackerHandle();
-        this.serverSocket = new ServerSocket(clientPort);
-        this.environment = new PeerEnvironment(indexPath);
-        startPeerServerThread();
-    }
-
     public void stop() {
         try {
             serverSocket.close();
@@ -96,7 +89,7 @@ public class Client {
         environment.getIoService().gather(fileInfo.getFileId(), fileInfo.getName(), targetDir);
     }
 
-    void downloadFileParts(FileInfo fileInfo, DownloadEnvironment downloadEnvironment) {
+    private void downloadFileParts(FileInfo fileInfo, DownloadEnvironment downloadEnvironment) {
         final int numberOfParts = IOService.getNumberOfParts(fileInfo.getSize(), PART_SIZE);
         final List<Thread> downloaders = new ArrayList<>();
         for (int i = 0; i < numberOfParts; i++) {
