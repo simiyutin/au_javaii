@@ -61,6 +61,7 @@ public class Client {
         if (!file.exists()) {
             return;
         }
+        updateTrackerSocket();
         UploadRequest request = new UploadRequest(file.getName(), file.length());
         request.dump(trackerSocket.getOutputStream());
         UploadResponse response = UploadResponse.parse(trackerSocket.getInputStream());
@@ -71,6 +72,7 @@ public class Client {
     }
 
     public void updateTracker() throws IOException {
+        updateTrackerSocket();
         UpdateRequest updateRequest = new UpdateRequest(serverSocket.getLocalPort(), environment.getSeedingFileIds());
         updateRequest.dump(trackerSocket.getOutputStream());
         UpdateResponse updateResponse = UpdateResponse.parse(trackerSocket.getInputStream());
@@ -81,6 +83,7 @@ public class Client {
 
     public Set<FileInfo> listTracker() {
         try {
+            updateTrackerSocket();
             ListRequest request = new ListRequest();
             request.dump(trackerSocket.getOutputStream());
             ListResponse response = ListResponse.parse(trackerSocket.getInputStream());
@@ -92,6 +95,7 @@ public class Client {
     }
 
     public List<HostPort> executeSources(int fileId) throws IOException {
+        updateTrackerSocket();
         SourcesRequest request = new SourcesRequest(fileId);
         request.dump(trackerSocket.getOutputStream());
         SourcesResponse response = SourcesResponse.parse(trackerSocket.getInputStream());
@@ -188,6 +192,8 @@ public class Client {
     }
 
     private Map<Integer, Set<HostPort>> getSeeds(FileInfo fileInfo) throws IOException {
+        updateTrackerSocket();
+
         SourcesRequest request = new SourcesRequest(fileInfo.getFileId());
         request.dump(trackerSocket.getOutputStream());
         SourcesResponse response = SourcesResponse.parse(trackerSocket.getInputStream());
@@ -210,6 +216,19 @@ public class Client {
             }
         }
         return seeds;
+    }
+
+    private void updateTrackerSocket() throws IOException {
+//        try {
+//            if (trackerSocket.getInetAddress().isReachable(500)){
+//                return;
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
+        //todo сделать нормально
+        trackerSocket = new Socket(trackerSocket.getInetAddress(), TRACKER_PORT);
     }
 
 

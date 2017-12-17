@@ -11,10 +11,11 @@ import java.util.concurrent.TimeUnit;
 public class Tracker {
     private ServerSocket serverSocket = null;
     private final List<Socket> sockets = new ArrayList<>();
-    private final TrackerEnvironment environment = new TrackerEnvironment();
+    private TrackerEnvironment environment;
     private final int PORT = 8081;
 
-    public void start() throws IOException {
+    public void start(String trackerIndexPath) throws IOException {
+        environment = new TrackerEnvironment(trackerIndexPath);
         serverSocket = new ServerSocket(PORT);
         startListenerThread();
         startReaperThread();

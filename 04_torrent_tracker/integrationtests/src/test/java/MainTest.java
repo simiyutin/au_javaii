@@ -22,11 +22,13 @@ public class MainTest {
     private final String indexPathFst = basePath + "/index_fst/";
     private final String indexPathSnd = basePath + "/index_snd/";
     private final String downloadsPath = basePath + "/downloads/";
+    private final String trackerIndexPath = basePath + "/tracker_index/";
 
     private void clearFolders() {
         rmrf(indexPathFst);
         rmrf(indexPathSnd);
         rmrf(downloadsPath);
+        rmrf(trackerIndexPath);
     }
 
     private void prepareTest() {
@@ -43,7 +45,7 @@ public class MainTest {
         prepareTest();
 
         Tracker tracker = new Tracker();
-        tracker.start();
+        tracker.start(trackerIndexPath);
         Client client = new Client();
         client.start(11111, "localhost", indexPathFst);
 
@@ -64,7 +66,7 @@ public class MainTest {
         prepareTest();
 
         Tracker tracker = new Tracker();
-        tracker.start();
+        tracker.start(trackerIndexPath);
         Client client = new Client();
         client.start(11111, "localhost", indexPathFst);
 
@@ -104,7 +106,7 @@ public class MainTest {
         prepareTest();
 
         Tracker tracker = new Tracker();
-        tracker.start();
+        tracker.start(trackerIndexPath);
         Client client = new Client();
         client.start(11111, "localhost", indexPathFst);
 
@@ -136,7 +138,7 @@ public class MainTest {
         String fileName = "notexists.txt";
 
         Tracker tracker = new Tracker();
-        tracker.start();
+        tracker.start(trackerIndexPath);
 
         Client client2 = new Client();
         client2.start(11112, "localhost", indexPathSnd);
@@ -161,7 +163,7 @@ public class MainTest {
         String fileName = "notexists.txt";
 
         Tracker tracker = new Tracker();
-        tracker.start();
+        tracker.start(trackerIndexPath);
         Client client = new Client();
         client.start(11111, "localhost", indexPathFst);
 
@@ -179,7 +181,7 @@ public class MainTest {
         String fileName = "kitty.jpg";
 
         Tracker tracker = new Tracker();
-        tracker.start();
+        tracker.start(trackerIndexPath);
         Client client = new Client();
         client.start(11111, "localhost", indexPathFst);
 
@@ -213,6 +215,42 @@ public class MainTest {
         client.stop();
         client2.stop();
 
+    }
+
+    @Test
+    public void testRestoringStateServer() throws IOException {
+        prepareTest();
+
+        String fileName = "kitty.jpg";
+        Tracker tracker = new Tracker();
+        tracker.start(trackerIndexPath);
+        Client client = new Client();
+        client.start(11111, "localhost", indexPathFst);
+
+        client.uploadFile(basePath + fileName);
+
+        tracker.stop();
+        tracker = new Tracker();
+        tracker.start(trackerIndexPath);
+
+        client.updateTracker();
+
+        Client client2 = new Client();
+        client2.start(11112, "localhost", indexPathSnd);
+
+        Set<FileInfo> infoList = client2.listTracker();
+        assertTrue(infoList.size() == 1);
+        FileInfo fileInfo = infoList.iterator().next();
+
+        client2.downloadFile(fileInfo, downloadsPath);
+
+        File expected = new File(basePath + fileName);
+        File actual = new File(downloadsPath + fileName);
+
+        assertBinaryEquals(expected, actual);
+        tracker.stop();
+        client.stop();
+        client2.stop();
     }
 
     public static void assertBinaryEquals(File expected, File actual) {
