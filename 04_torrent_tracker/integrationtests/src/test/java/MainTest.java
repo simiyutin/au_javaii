@@ -44,8 +44,7 @@ public class MainTest {
     public void testUpload() throws IOException {
         prepareTest();
 
-        Tracker tracker = new Tracker();
-        tracker.start(trackerIndexPath);
+        Tracker tracker = new Tracker(trackerIndexPath);
         Client client = new Client(11111, "localhost", indexPathFst);
 
         File file = new File(basePath + "test.txt");
@@ -64,8 +63,7 @@ public class MainTest {
     public void testSources() throws IOException {
         prepareTest();
 
-        Tracker tracker = new Tracker();
-        tracker.start(trackerIndexPath);
+        Tracker tracker = new Tracker(trackerIndexPath);
         Client client = new Client(11111, "localhost", indexPathFst);
 
         File file = new File(basePath + "test.txt");
@@ -103,8 +101,7 @@ public class MainTest {
     private void testUploadDownload(String fileName) throws IOException {
         prepareTest();
 
-        Tracker tracker = new Tracker();
-        tracker.start(trackerIndexPath);
+        Tracker tracker = new Tracker(trackerIndexPath);
         Client client = new Client(11111, "localhost", indexPathFst);
 
 
@@ -134,8 +131,7 @@ public class MainTest {
 
         String fileName = "notexists.txt";
 
-        Tracker tracker = new Tracker();
-        tracker.start(trackerIndexPath);
+        Tracker tracker = new Tracker(trackerIndexPath);
 
         Client client2 = new Client(11112, "localhost", indexPathSnd);
 
@@ -158,8 +154,7 @@ public class MainTest {
 
         String fileName = "notexists.txt";
 
-        Tracker tracker = new Tracker();
-        tracker.start(trackerIndexPath);
+        Tracker tracker = new Tracker(trackerIndexPath);
         Client client = new Client(11111, "localhost", indexPathFst);
 
         client.uploadFile(basePath + fileName);
@@ -175,8 +170,7 @@ public class MainTest {
         prepareTest();
         String fileName = "kitty.jpg";
 
-        Tracker tracker = new Tracker();
-        tracker.start(trackerIndexPath);
+        Tracker tracker = new Tracker(trackerIndexPath);
         Client client = new Client(11111, "localhost", indexPathFst);
 
         client.uploadFile(basePath + fileName);
@@ -214,15 +208,13 @@ public class MainTest {
         prepareTest();
 
         String fileName = "kitty.jpg";
-        Tracker tracker = new Tracker();
-        tracker.start(trackerIndexPath);
+        Tracker tracker = new Tracker(trackerIndexPath);
         Client client = new Client(11111, "localhost", indexPathFst);
 
         client.uploadFile(basePath + fileName);
 
         tracker.stop();
-        tracker = new Tracker();
-        tracker.start(trackerIndexPath);
+        tracker = new Tracker(trackerIndexPath);
 
         client.updateTracker();
 
@@ -245,8 +237,8 @@ public class MainTest {
 
     @Test
     public void testDoubleUpdate() throws IOException {
-        Tracker tracker = initTracker();
-        Client client = initClient(11111, indexPathFst);
+        Tracker tracker = new Tracker(trackerIndexPath);
+        Client client = getDefaultClient(11111, indexPathFst);
 
         client.updateTracker();
         client.updateTracker();
@@ -260,16 +252,15 @@ public class MainTest {
     public void testMultipleSeeds() throws IOException {
         prepareTest();
 
-        Tracker tracker = new Tracker();
-        tracker.start(basePath + "/tracker_index_partial/");
+        Tracker tracker = new Tracker(basePath + "/tracker_index_partial/");
 
         int fstPort = 11111;
         int sndPort = 11112;
         int thdPort = 11113;
 
-        Client client1 = initClient(fstPort, basePath + "/index_fst_partial/");
-        Client client2 = initClient(sndPort, basePath + "/index_snd_partial/");
-        Client client3 = initClient(thdPort, indexPathThd);
+        Client client1 = getDefaultClient(fstPort, basePath + "/index_fst_partial/");
+        Client client2 = getDefaultClient(sndPort, basePath + "/index_snd_partial/");
+        Client client3 = getDefaultClient(thdPort, indexPathThd);
 
         client1.updateTracker();
         client2.updateTracker();
@@ -288,13 +279,7 @@ public class MainTest {
         client3.stop();
     }
 
-    public Tracker initTracker() throws IOException {
-        Tracker tracker = new Tracker();
-        tracker.start(trackerIndexPath);
-        return tracker;
-    }
-
-    public Client initClient(int port, String indexPath) throws IOException {
+    public Client getDefaultClient(int port, String indexPath) throws IOException {
         Client client = new Client(port, "localhost", indexPath);
         return client;
     }

@@ -25,8 +25,7 @@ public class TrackerTest {
     public void testSimple() throws IOException {
         prepareTests();
 
-        Tracker tracker = new Tracker();
-        tracker.start(trackerIndexPath);
+        Tracker tracker = new Tracker(trackerIndexPath);
         Socket socket = new Socket("localhost", 8081);
         DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
 
@@ -43,6 +42,7 @@ public class TrackerTest {
         dos.writeInt(RequestType.LIST.getValue());
         ListResponse response = ListResponse.parse(socket.getInputStream());
         System.out.println(response.getFiles());
+        tracker.stop();
     }
 
     public static void rmrf(String path) {
